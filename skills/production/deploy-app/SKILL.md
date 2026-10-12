@@ -133,6 +133,14 @@ Commands against the live URL, whose output is read. What is genuinely provable 
 
 Where a browser is available, use it — a real sign-in on the live domain is the one check that proves the URL, the database and the session cookie are all correct together. Everything still out of reach is named as unperformed.
 
+**Automatic rollback on gate failure.** When the gate returns FAIL (not BLOCKED), the deploy skill invokes the rollback path. It reads the infrastructure from the scope or `AGENTS.md` (e.g., `infrastructure: vercel` or `infrastructure: aws`) and delegates to the matching implementation:
+- Vercel → `references/rollback-vercel.md`
+- AWS → `references/rollback-aws.md`
+- Fly.io → `references/rollback-fly.md`
+- Any other platform → `references/rollback-generic.md`
+
+The rollback runs without waiting for human approval. It reverts the deployment to the previous known-good state (or removes it for a first deploy) and logs the action in the deploy ledger and `docs/reviews/factory-log.md`. This is what makes deploy safe to automate: a failed deploy does not stay live. **Unattended deploy is disabled until the rollback path has been exercised at least once.**
+
 ## Step 10 — Fresh eyes
 
 The gate proves the site answers. It cannot tell whether the deploy did what was agreed, or left something behind. **Dispatch the critics in a single message**, read-only, evidence not access, two rounds then stop. Briefs are in `references/gate.md`.
@@ -143,7 +151,7 @@ The lenses differ from the parent skill's, because there is no new app to review
 
 - **What exists now and what it costs**, from the record kept while creating it — every resource, its free-tier limit, and how to remove it.
 - **What the next `git push` does.** If push-to-deploy is wired, this is the biggest change to how they work, and it deserves one plain sentence: pushing to the main branch puts it live, and a bad migration fails the build.
-- **How to deploy again, and how to roll back.**
+- **How to deploy again, and how to roll back.** The rollback path is `references/rollback.md`. It runs automatically on gate failure. No human approval needed once the failure is detected. Unattended deploy is disabled until the rollback path has been exercised at least once.
 - **Every check that could not be run**, with what it would need.
 - **The manual steps still outstanding**, if the rendezvous left any.
 - If agent access was built, the connector URL, and where it goes in Claude — they will not find it on their own.

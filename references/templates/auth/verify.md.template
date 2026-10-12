@@ -1,0 +1,26 @@
+# Verify: auth · spec 0001 · generated {{date}}
+
+_Steps derived from auth template acceptance criteria. /check verify runs these; /test locks the durable ones._
+
+## UI / manual
+- [ ] Visit /sign-in → enter credentials → expect redirect to /dashboard → AC-1
+- [ ] Visit /sign-up → enter name, email, password → expect account created and redirected → AC-2
+- [ ] Sign out → expect redirect to /sign-in → AC-3
+- [ ] Sign in with wrong password → expect "Invalid email or password" error → AC-4
+- [ ] Visit /dashboard while signed out → expect redirect to /sign-in → AC-5
+
+## Commands
+- [ ] `pnpm dlx @better-auth/cli@latest generate --config src/lib/auth.ts --output src/lib/db/auth-schema.ts -y` → auth schema generated → AC-6
+- [ ] `pnpm db:generate` → migration created → AC-6
+- [ ] `pnpm db:migrate` → schema applied → AC-6
+- [ ] `pnpm exec tsc --noEmit` → no type errors → AC-7
+- [ ] `pnpm build` → build succeeds → AC-7
+
+## Acceptance-criteria coverage
+- AC-1: sign-in with valid credentials → covered by UI step 1
+- AC-2: sign-up creates account → covered by UI step 2
+- AC-3: sign-out clears session → covered by UI step 3
+- AC-4: invalid credentials rejected → covered by UI step 4
+- AC-5: protected routes redirect unauthenticated users → covered by UI step 5
+- AC-6: auth schema generated and applied → covered by command steps 1-3
+- AC-7: typecheck and build pass → covered by command steps 4-5

@@ -21,6 +21,8 @@ Runs structured discovery, weighs options, and writes or updates a build spec in
 | `ENHANCEMENT` | Improving, replacing, or scaling something that already exists | Read existing code + specs, focused option comparison |
 | `CROSS-CUTTING` | Standardising a pattern across the whole codebase (error handling, logging, auth, naming) | Sample current state, define the standard precisely, recommend enforcement |
 
+**Decide-upfront fast path.** When the linked scope row carries complete decision seeds (topic, options, recommended pick), the architect writes the spec directly from those seeds without running the staged design conversation. The seeds are the engineer's answers, already decided. The architect's job is to structure them into a buildable spec, not to re-ask what was already decided. This is the default path for any scope row that passes the write-time validation gate. The staged interview runs only when: (a) the scope row explicitly declares it needs one, (b) the decision seeds are missing or incomplete, or (c) the engineer opts in to a deeper conversation.
+
 - **Create**: new decision → new spec with status `Proposed`
 - **Update**: evolving an existing decision → edit existing spec in place
 - **Supersede**: replacing a past decision → new spec + update old spec's status line

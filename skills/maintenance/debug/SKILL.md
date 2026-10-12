@@ -77,6 +77,26 @@ Make the **minimal, targeted** change that addresses the proven cause. Don't fix
 - **Add a regression test** that fails without the fix and passes with it, so this bug can't silently return; write it inline, or hand the spec to `/test`.
 - **Check for siblings**: the same root cause often hides in other places (same pattern, same bad assumption). Grep for them and note or fix them.
 
+### Step 7: Factory feedback loop (runs when root cause traces to a bad decision)
+
+A bug is fixed. The factory must learn from it. If the root cause traces to a bad decision (not just a coding mistake), this step runs. A coding mistake (typo, off by one, wrong variable) does not trigger this step.
+
+**Determine the category of the bad decision:**
+
+1. **Scope template gap** (the scope row should have caught this but did not) → update `skills/foundation/scope/scope-template.md` with a new validation rule or tighter requirement.
+2. **Architect checklist gap** (the design conversation should have asked this but did not) → update `skills/foundation/architect/internal/design-conversation.md` with a new dimension or question.
+3. **Reference gap** (the factory's shared knowledge was wrong or missing) → update the relevant `references/*.md` file with the lesson.
+4. **Develop gate gap** (the Step 0 gate should have caught this but did not) → update `skills/build/develop/SKILL.md` with a new input coverage check.
+5. **Not a factory gap** (the decision was reasonable given what was known at the time) → emit `wont-fix-factory: <reason>` in the report.
+
+**Emit the update:**
+
+- Write the rule update directly to the factory file it belongs to. A new checklist item in the design conversation. A new validation rule in the scope template. A corrected reference file. The update is a surgical edit, not a rewrite.
+- Log the update in `docs/reviews/factory-log.md` with the bug that triggered it, the root cause, the file updated, and what changed.
+- If the decision was reasonable at the time, emit `wont-fix-factory: <reason>` in the report. No file update needed.
+
+**This step is not optional.** Every debug run that traces to a bad decision must either update a factory file or emit an explicit wont-fix. The lesson must land in the factory's own files, not just the app under repair. This is how the factory gets smarter with every bug it fixes.
+
 ### Optional: run it in a subagent
 
 For a hunt that is not trivial, spawn an investigation subagent so the iterative tool use doesn't fill the main context:

@@ -8,6 +8,32 @@ Reference shapes for writing the scope and the completion report. Rules live in 
 - **Only what is set.** No `n/a`, no `inherit`, no empty fields. A pointer line (`spec <n> · code in <path>`) appears **only once those exist**: the spec link added by `/architect` at capture, the code path by `/develop`.
 - **A feature grows a defined shape.** It has a one or two line **intent**, a single **Done when:** line (the acceptance criteria seeds), and **checkbox steps**. A **not yet designed** feature has **one box** (its entry command: `/architect` when it `needs a decision`, else `/develop`, or `/audit` for standards & tooling). **When its spec is captured, `/architect` fills in the built ready shape:** `Design it` (ticked) → `Build it: /develop <feature>` with **2 to 5 milestone sub items rolled up from the spec** → `Verify it: /check verify <feature>` → `Test it: /test <feature>`. **The atomic build tasks stay in the spec's `## Build plan`, never here**. The scope carries only the milestone rollup. The next step is always the first unticked box.
 
+## Row validation gate (write time, not discover later)
+
+Every scope row MUST pass this gate before it is written. A row that fails is **refused**, not written with a vague placeholder.
+
+**Required fields for every row:**
+
+| Field | Requirement | Refused when |
+|---|---|---|
+| **Intent** | 1 to 2 lines: what it is and why it matters | Missing, or a single vague word ("auth stuff") |
+| **Done when** | At least one observable outcome seed | Missing, or empty |
+| **Needs spec** | Explicit `yes` or `no` | Missing, or "maybe" |
+
+**When `Needs spec: yes`, the row ALSO needs decision seeds:**
+
+| Seed | Requirement | Refused when |
+|---|---|---|
+| **Decision topic** | The specific load bearing choice (e.g. "which auth provider + session model") | Missing, or too vague to act on |
+| **Options considered** | At least two real options the engineer weighed | Missing, or only one option listed |
+| **Recommended pick** | The engineer's suggested choice with a one line why | Missing, or no rationale |
+
+A row that has all required fields is **decide-upfront complete**. It flows through `/architect` and `/develop` without a staged interview. The architect writes the spec directly from the seeds; the develop Step 0 gate sees a complete spec and skips the stop-and-ask.
+
+A row that lacks decision seeds but has `Needs spec: yes` is **incomplete**. The scope skill refuses it and asks for the missing seeds at write time, not later.
+
+**Validation happens at write time.** The skill checks every row before writing. If any row fails, the skill reports which row and which fields are missing, and asks for them. No vague rows enter the scope.
+
 ## Single file scope
 
 ```markdown
@@ -22,15 +48,17 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 
 ## At a glance
 
-| # | Feature | Phase | Status |
-|---|---------|-------|--------|
-| 1 | Stack & architecture | Foundation | in-progress |
-| 2 | Coding standards & tooling | Foundation | planned |
-| 3 | Data model | Foundation | in-progress |
-| 4 | Design system & UI foundation | Foundation | planned |
-| 5 | Core standup loop | Slice 1 | planned |
-| 6 | Daily reminders | Slice 2 | planned |
-| … | … | … | … |
+| # | Feature | Phase | Status | Needs spec | specced_at | built_at | verified_at |
+|---|---------|-------|--------|------------|------------|----------|-------------|
+| 1 | Stack & architecture | Foundation | in-progress | yes | 2026-10-12 | — | — |
+| 2 | Coding standards & tooling | Foundation | planned | no | — | — | — |
+| 3 | Data model | Foundation | in-progress | yes | 2026-10-12 | — | — |
+| 4 | Design system & UI foundation | Foundation | planned | yes | — | — | — |
+| 5 | Core standup loop | Slice 1 | planned | yes | — | — | — |
+| 6 | Daily reminders | Slice 2 | planned | yes | — | — | … |
+| … | … | … | … | … | … | … | … |
+
+**Telemetry fields** (`specced_at`, `built_at`, `verified_at`): written automatically by the skill that owns the transition. `/architect` writes `specced_at` when the spec is captured. `/develop` writes `built_at` when the feature is built. `/check verify` writes `verified_at` when the feature passes verification. Never entered manually. A `—` means that transition has not happened yet. Cycle time = `verified_at - specced_at` (or `built_at - specced_at` for features that do not require verification).
 
 ## Foundations
 
@@ -45,6 +73,7 @@ Spec 0001 · code in `./`
 ### 2. Coding standards & tooling
 Capture conventions, then install lint, format, and pre-commit enforcement from the real scaffolded project.
 **Done when:** root `AGENTS.md` reflects the real stack, and lint/format/pre-commit run clean.
+**Needs spec:** no (pure implementation, stack already decided)
 - [ ] Capture conventions + tooling choices: `/audit`
 - [ ] Install the tooling: `/develop tooling`
 - [ ] Check it runs clean: `/test`
@@ -67,6 +96,11 @@ Spec 0002 · code (filled by /develop)
 ### 4. Design system & UI foundation · needs a decision
 Visual language, layout primitives, and base components so the flows feel cohesive and accessible.
 **Done when:** `design.md` covers type/color/spacing/components, and base components handle focus and keyboard.
+**Needs spec:** yes
+**Decision seeds:**
+- Topic: design system direction and component inventory
+- Options: (a) Tailwind + shadcn/ui component primitives (recommended: matches stack, fast to build) (b) custom design system from scratch
+- Recommended: Tailwind + shadcn/ui, because the stack already uses it and it provides accessible primitives out of the box
 - [ ] Design it (spec): `/architect design system & UI foundation`
 
 ## Slice 1: Core standup loop
@@ -99,10 +133,20 @@ Out of scope for the current build pass, kept so the plan stays honest.
 | State | Set by | The feature shows |
 |---|---|---|
 | `planned` · needs a decision | `/scope` | one box: `Design it (spec): /architect <feature>` |
-| `in-progress` (designed) | **`/architect` at spec capture** | `Design it` ticked; spec linked; `Build it: /develop <feature>` + **2 to 5 milestones**; the tier's closing boxes (`Verify it` Alpha+, `Test it` Beta+, `Review it` + `Document it` GA); any surfaced follow-up enrolled |
+| `in-progress` (designed) | **`/architect` at spec capture** | `Design it` ticked; spec linked; `Build it: /develop <feature>` + **2 to 5 milestones**; the tier's closing boxes (`Verify it` Alpha+, `Test it` Beta+, `Review it` + `Document it` GA); any surfaced follow-up enrolled; `specced_at` written |
 | `in-progress` (building) | `/develop` | milestone sub-boxes tick one by one; code pointer filled |
-| `in-progress` (verified) | `/check verify` | `Build it` + milestones ticked; `Verify it` ticked |
+| `in-progress` (verified) | `/check verify` | `Build it` + milestones ticked; `Verify it` ticked; `built_at` and `verified_at` written |
 | `done` | **you, when you decide it is** (any skill sets it when you say so); `/sync` reconciles | boxes you ran ticked, skipped ones marked skipped; the tier's last stage (`Prototype` → after `/develop`; `Alpha` → after `/check verify`; `Beta`/`GA` → after `/test`) is the suggested point to call it done; `/sync` captures conventions |
+
+**Telemetry timestamps** (`specced_at`, `built_at`, `verified_at`): written by the owning skill, never manually.
+
+| Field | Written by | When |
+|---|---|---|
+| `specced_at` | `/architect` | Spec is captured and linked to the feature |
+| `built_at` | `/develop` | Feature build is complete and self-checked |
+| `verified_at` | `/check verify` | Feature passes verification |
+
+Cycle time = `verified_at - specced_at` (or `built_at - specced_at` for features that do not require verification). No dashboard required yet. The timestamps are written to the At a glance table automatically.
 
 - **Next step** = the first unticked box (always a command or a tracked milestone).
 - **needs a decision** = run `/architect` first; otherwise straight to `/develop` (or `/audit` for standards & tooling). The tag drops once the spec is captured.

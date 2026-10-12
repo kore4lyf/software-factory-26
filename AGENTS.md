@@ -69,6 +69,7 @@ Run when scaffolding or shipping.
 Run when automating the feedback loop.
 
 - `/create-factory` — Set up issue → PR pipeline
+- `/factory-run` — Spec in, product out. Goal driven run with no mid build stops. Two modes: `decide-upfront` (you answer every architect question in one batch before any build) or `auto-recommended` (architect takes its recommended pick each time). Build always runs to finish with stubs and fallbacks. Blockers become follow ups in `docs/reviews/factory-log.md`, never half built apps.
 
 ### Maintenance Phase
 Run when fixing or documenting.
@@ -109,6 +110,15 @@ When on, `/develop` will:
 ## Nested Context
 
 This is the root `AGENTS.md`. If an area of the codebase has its own conventions, add a nested `AGENTS.md` inside that folder. Skills read the nearest one, so local rules override root rules when they need to.
+
+## Factory Run Mode
+
+When `/factory-run` is active, its rules override the base skills for that run:
+
+1. Architect everything once before any build. No per feature stops.
+2. No `Architect it first` hard stop inside the run. New gaps become `Assumed` appendices, build continues.
+3. No `blocked` status. Missing keys, broken packages, failing installs get a stub behind the same interface, logged in `docs/reviews/factory-log.md`.
+4. Product is whole and runnable at the end. Follow ups are small (wire real key, swap stub, ratify spec).
 
 ## Reference Files
 

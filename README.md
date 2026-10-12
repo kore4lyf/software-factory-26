@@ -4,7 +4,12 @@ Welcome to Software Factory 26. This factory combines JSM's engineering workflow
 
 ## Quick Start
 
-For a new project:
+For a goal driven run (spec in, product out, no stops):
+1. Run `/factory-run` and pick `auto-recommended` or `I decide upfront`
+2. If upfront, answer every architect question in one batch, then walk away
+3. Get a whole runnable product plus `docs/reviews/factory-log.md` follow ups
+
+For a supervised build:
 1. Run `/scope` to plan what to build
 2. Run `/architect` to document key decisions
 3. Run `/start-app` to scaffold with production defaults
@@ -20,7 +25,7 @@ For a new project:
 | Foundation | `/scope`, `/audit`, `/architect` |
 | Build | `/develop`, `/check`, `/test` |
 | Production | `/start-app`, `/review-app`, `/deploy-app` |
-| Iteration | `/create-factory` |
+| Iteration | `/create-factory`, `/factory-run` |
 | Maintenance | `/debug`, `/document`, `/sync` |
 
 ## Documentation

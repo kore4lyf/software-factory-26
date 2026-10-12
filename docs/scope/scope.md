@@ -7,14 +7,16 @@
 
 ## At a Glance
 
-| Feature | Status | Spec |
-|---------|--------|------|
-| Foundation setup | `in-progress` | — |
-| JSM skills integration | `done` | — |
-| Leon's skills integration | `done` | — |
-| Reference files | `pending` | — |
-| Initial scope template | `pending` | — |
-| Documentation | `pending` | — |
+| # | Feature | Status | Needs spec | specced_at | built_at | verified_at |
+|---|---------|--------|------------|------------|----------|-------------|
+| 1 | Foundation setup | `in-progress` | yes | — | — | — |
+| 2 | JSM skills integration | `done` | no | — | — | — |
+| 3 | Leon's skills integration | `done` | no | — | — | — |
+| 4 | Reference files | `pending` | yes | — | — | — |
+| 5 | Initial scope template | `pending` | yes | — | — | — |
+| 6 | Documentation | `pending` | no | — | — | — |
+
+**Telemetry:** `specced_at` written by /architect at spec capture. `built_at` written by /develop at build complete. `verified_at` written by /check verify at verification pass. Never entered manually. Cycle time = verified_at minus specced_at.
 
 ## Foundation Setup
 
@@ -105,11 +107,19 @@ Create shared reference files that both JSM-style development and Leon-style pro
 4. Legal patterns
 5. Operations patterns
 
+**Needs spec:** yes
+**Decision seeds:**
+- Topic: reference file format and structure for the factory's shared knowledge base
+- Options: (a) Markdown pattern files with frontmatter metadata (recommended: simple, readable, no build step) (b) JSON-based structured templates (machine-readable but harder to maintain) (c) TypeScript module exports (type-safe but couples references to code)
+- Recommended: Markdown pattern files with frontmatter, because the factory is doc-driven, the files are read by skills at runtime, and markdown is the lowest common denominator that both humans and AI can read and write without tooling
+
 ### Milestones
 - [ ] Copy Leon's reference files
 - [ ] Adapt for JSM output style
 - [ ] Create stack.md template
 - [ ] Create design.md template
+
+**Decide-upfront complete.** This row has intent, Done when seeds, Needs spec yes, and decision seeds. /architect can write the spec directly from these seeds without a staged interview. /develop can build without a stop-and-ask gate.
 
 ## Documentation
 

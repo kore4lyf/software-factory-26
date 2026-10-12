@@ -26,13 +26,15 @@ It does three jobs at once: the failure report, the removal list at hand-off, an
 
 **Fail closed. Do not tear down. Print the ledger.**
 
-There is no "roll back" on a first deploy, because nothing was live before. Rolling back is a concept that exists only on a second run, against a site that already had users.
+**Rollback is automatic on gate failure.** When the Step 9 gate returns FAIL (not BLOCKED), the deploy skill invokes the rollback path (`references/rollback.md`) without waiting for human approval. This is the executable path that makes deploy safe to automate. See `references/rollback.md` for the full procedure.
+
+There is no "roll back" on a first deploy in the traditional sense, because nothing was live before. For a first deploy, rollback means removing the deployment and resources. For a redeploy, rollback means reverting to the previous known-good deployment.
 
 **Retry only these**, and say so when you do: a network timeout, a cold database refusing its first connection, DNS not yet propagated, a deployment still queued, a provider rate limit or server error.
 
-**Never retry:** a build error, any provider rejection of a request, or a failed migration. Retrying a build error unchanged is superstition — the same commit builds the same way.
+**Never retry:** a build error, any provider rejection of a request, or a failed migration. Retrying a build error unchanged is superstition — the same commit builds the same way. A failed build triggers rollback, not retry.
 
-**Never delete a resource to "start clean."** A database that a later step failed to reach still holds the schema that worked. Deleting it destroys the only finished part of the job. Stop, report, and let the user decide.
+**Never delete a resource to "start clean."** A database that a later step failed to reach still holds the schema that worked. Deleting it destroys the only finished part of the job. Stop, report, and let the user decide. The exception is the rollback path, which removes resources only when the gate has already failed.
 
 ## What can and cannot be undone
 

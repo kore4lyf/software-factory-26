@@ -14,6 +14,8 @@ Write everything this skill produces, files and messages alike, in plain simple 
 
 The builder: turns a spec plus project conventions into working code. Tracks: **UI** (components, pages, layouts; `ui-guide.md`), **Logical** (APIs, services, data layers, business logic, integrations; `logical-guide.md`), or both (e.g. "auth" = sign in pages plus session logic → run both). Step 0 gates on the spec so load bearing choices (an auth approach, a payment provider) are decided in `/architect`, not silently invented partway through the build.
 
+**Decide-upfront fast path.** When the governing spec is decide-upfront complete (written from complete decision seeds, with all acceptance criteria, data model, API surface, and stack decisions already pinned), the Step 0 gate sees a complete spec and skips the stop-and-ask. The build proceeds directly to the build flow. The gate runs only when: (a) the spec is missing, (b) the spec is `Assumed` (a decision was recorded but not deliberated), or (c) the input coverage test finds an unnamed value source. This is the default path for any feature whose scope row passed the write-time validation gate.
+
 ## Asks vs acts
 
 Gates, then acts: no upfront question rounds like `/architect`. Read the decision, build, ask only what the design left open (the visual direction when no reference was given; a business rule the spec didn't settle). Infer from the spec, `AGENTS.md`, and codebase; recommend local implementation choices.
@@ -58,6 +60,10 @@ Warnings, not hard blocks, but surface them.
 **Git integration:** if the nearest `AGENTS.md` `## Git` says `integration: on`, read `flow/git.md` and follow it (branch before building, commit as milestones land); absent or `off` → do no active git.
 
 ### Step 0: The spec gate (always first)
+
+**Fast path: decide-upfront complete spec.** Before running the input coverage test, check if the governing spec is decide-upfront complete. A spec is decide-upfront complete when: (a) it was written from complete decision seeds (the scope row had topic, options, and a recommended pick), (b) it has all required sections (Requirements with AC-1…, Decision, Build plan, Consequences), and (c) the input coverage test passes (every value the build must produce has a named source in the spec). If all three are true, skip the stop-and-ask and proceed directly to the build flow. Do not re-ask what was already decided.
+
+**When the fast path does not apply** (spec missing, spec is `Assumed`, or input coverage finds a gap), run the full gate below.
 
 Is a decision owed and unrecorded? Do NOT judge this by introspection ("do I feel like I'm inventing something?"), the build model rationalizes a real decision as "just wiring" and waves it through. Use a positive **input coverage** test, which is mechanical and harder to talk yourself out of:
 

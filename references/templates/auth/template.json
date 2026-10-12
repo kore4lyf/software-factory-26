@@ -1,0 +1,55 @@
+{
+  "name": "auth",
+  "description": "Better Auth sign-in (email/password) template with verify proof",
+  "version": "1.0.0",
+  "inputs": {
+    "provider": {
+      "type": "string",
+      "options": ["sqlite", "pg"],
+      "default": "sqlite",
+      "description": "Database provider"
+    },
+    "appName": {
+      "type": "string",
+      "description": "Application name for display"
+    }
+  },
+  "files": [
+    {
+      "source": "auth.ts.template",
+      "output": "src/lib/auth.ts",
+      "description": "Better Auth configuration"
+    },
+    {
+      "source": "route.ts.template",
+      "output": "src/app/api/auth/[...all]/route.ts",
+      "description": "Auth API route handler"
+    },
+    {
+      "source": "auth-client.ts.template",
+      "output": "src/lib/auth-client.ts",
+      "description": "Client-side auth helper"
+    },
+    {
+      "source": "sign-in-page.tsx.template",
+      "output": "src/app/(auth)/sign-in/page.tsx",
+      "description": "Sign-in page"
+    },
+    {
+      "source": "sign-up-page.tsx.template",
+      "output": "src/app/(auth)/sign-up/page.tsx",
+      "description": "Sign-up page"
+    },
+    {
+      "source": "verify.md.template",
+      "output": "docs/specs/0001-auth/verify.md",
+      "description": "Verification proof"
+    }
+  ],
+  "postGenerate": [
+    "pnpm add better-auth",
+    "pnpm dlx @better-auth/cli@latest generate --config src/lib/auth.ts --output src/lib/db/auth-schema.ts -y",
+    "pnpm db:generate",
+    "pnpm db:migrate"
+  ]
+}

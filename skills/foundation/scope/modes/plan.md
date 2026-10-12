@@ -58,7 +58,10 @@ From the answers, produce the feature list: foundations first (Step 4), then sli
 - **Workflow tier** (only when it differs from the project default set in Step 5b): `Prototype` / `Alpha` / `Beta` / `GA`, from this feature's risk, scope, and compliance sensitivity. Most features inherit the project default; tag a feature (e.g. `· GA`) only when it warrants more or less rigor than the rest. Higher tier → more likely `Needs spec: yes`.
 - **Approach (optional per feature override)**: defaults to inherit. Only when genuinely best built differently, run a Build approach panel for THAT feature: `(recommended) inherit the project default` on top, plus the named approaches (Tracer Bullet · Skateboard · Facade (prototype grade) · Journey) as overrides; same panel and no hardcoded tool conventions as Step 3, tag and precedence rules per Step 3.
 - **Needs spec?**: the invent test: would building it require a decision the engineer hasn't made? Yes for a provider/library choice, a data model, a cross cutting pattern, the design system, a whole page/screen with no spec yet, or behavior that is not trivial (search, filtering, recommendations). No only for genuinely pure implementation an existing `design.md`/spec/convention covers. Unsure → yes; an unflagged decision is the expensive miss. `GA`/`Beta` tier → almost always yes.
+- **Decision seeds (when Needs spec: yes)**: the row must carry the seeds that let `/architect` write the spec without a staged interview. Required: (a) the specific decision topic, (b) at least two real options the engineer weighed, (c) a recommended pick with a one line why. The seeds are written into the scope row, not left for architect to discover.
 - One decision per spec: multiple distinct decisions in one feature → one `Needs spec: yes` item each, never one lumped "strategy" spec. Several sharing one broad decision that then splits → an umbrella that dependents reference; never mark a dependent `no` when it carries its own decision.
+
+**Row validation gate (before writing):** Every row must have intent, Done when, and an explicit Needs spec yes/no. A `yes` row must also have decision seeds (topic, options, recommended pick). The skill checks every row before writing. If any row fails, the skill reports which row and which fields are missing, and asks for them. No vague rows enter the scope. This is not optional: it is the core mechanism that makes the pipeline flow without interruption.
 
 No build task breakdown here. A not yet designed feature gets exactly one checkbox, its entry command: `/architect <feature>` when it `needs a decision`, else `/develop <feature>` (the coding standards and tooling foundation's first box is `/audit`, never `/develop`). Never enumerate UI / data model / API / test sub tasks; `/architect` fills the built ready shape on spec capture (see What this skill does; atomic tasks stay in the spec). The next step is then always the first unticked box, always a command or tracked milestone (no separate `Next:` line). See the lifecycle table in `scope-template.md`.
 
@@ -85,6 +88,8 @@ Each tier also sets what `done` means (see `scope-template.md`); a feature built
 Record the pick as the project default in the scope header `**Workflow:**` line (see `scope-template.md`). This default is what `/develop` reads (via the effective tier) to scale the next steps it recommends after a build.
 
 ### Step 6: Write the scope (single file or epic split)
+
+**Validate before writing.** Check every row against the gate in `scope-template.md`. If any row fails (missing intent, Done when, Needs spec, or decision seeds for a `yes` row), stop and ask for the missing fields. Do not write the scope until all rows pass.
 
 List the scope location again immediately before writing (a teammate may have changed it), then write per `scope-template.md`:
 

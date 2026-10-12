@@ -30,6 +30,25 @@ If product scoped, do not start the staged conversation yet:
 
 ---
 
+### Decide-upfront fast path (runs after Check A, before Framing)
+
+**When the linked scope row carries complete decision seeds, skip the staged conversation and write the spec directly from the seeds.**
+
+Check the scope row for this feature. If it has:
+- An explicit `Needs spec: yes`
+- Decision seeds: topic, at least two options, a recommended pick with a one line why
+
+Then the engineer has already decided. Do not re-ask. Instead:
+
+1. Take the decision seeds as the engineer's answers.
+2. Infer the framing (MODE, platform, stack) from the topic + `AGENTS.md` + codebase.
+3. Write the spec directly from the seeds: the recommended pick becomes the `## Decision`, the options become `## Options considered`, the one line why becomes part of `## Rationale`. Grow the acceptance criteria seeds from the scope row's `Done when:` line into full `AC-1…` requirements. Derive the `## Build plan` from the feature's intent and the chosen decision.
+4. Do not run the staged design conversation. Do not ask the engineer to confirm what they already decided. The spec is written and linked; the feature is ready for `/develop`.
+
+This is the default path for any scope row that passes the write-time validation gate. The staged interview runs only when: (a) the scope row explicitly declares it needs one, (b) the decision seeds are missing or incomplete, or (c) the engineer opts in to a deeper conversation.
+
+---
+
 ### Framing: infer, don't interrogate (no fixed question round)
 
 Infer the framing from the topic + `AGENTS.md` + codebase, don't ask it. State it back in a line or two so a wrong read is cheap to correct, then spend all questions on the feature:

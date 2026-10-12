@@ -13,9 +13,11 @@ Commands are written for a POSIX shell. **On Windows use the Bash tool** rather 
 Before running anything, fix the vocabulary, because this is what makes the gate readable:
 
 - **passed** — the command ran and the result was right.
-- **failed** — the command ran and the result was wrong.
-- **blocked** — a prerequisite isn't there yet, so the check could not mean anything.
-- **not attempted** — needs a browser, a card, or a person.
+- **failed** — the command ran and the result is wrong. **Triggers automatic rollback** (see `references/rollback.md` and infrastructure-specific implementation).
+- **blocked** — a prerequisite isn't there yet, so the check could not mean anything. Does NOT trigger rollback; the deploy may still be correct.
+- **not attempted** — needs a browser, a card, or a person. Does NOT trigger rollback.
+
+**Rollback on failure.** When any gate check returns `failed`, the deploy skill automatically invokes the rollback path. It reads the infrastructure from the scope or `AGENTS.md` and delegates to the matching implementation (`references/rollback-vercel.md`, `references/rollback-aws.md`, `references/rollback-fly.md`, or `references/rollback-generic.md`). No human approval is needed once the failure is detected. This is what makes deploy safe to automate.
 
 **Check zero is whether the domain resolves.** If it doesn't, every check behind it is `blocked: DNS`, reported as one line with one cause. Fifteen red failures for a single unpropagated record is noise that teaches the user to ignore the gate.
 

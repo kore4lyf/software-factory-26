@@ -14,9 +14,13 @@ Write everything this skill produces, files and messages alike, in plain simple 
 
 Turns an idea into an ordered, coarse, living plan and keeps it honest as the product ships. Answers what to build, in what order, how heavy, which need a decision first, not how to build one thing (that is `/architect` and `/develop`).
 
-Scope shape, coarse and small: a slim At a glance table (`# · Feature · Phase · Status`) + feature sections grouped by phase (see `scope-template.md`). Each section: heading `### N. Name` with short tags only when they matter (`needs a decision`, an approach override, a workflow tier override like `· GA`), a 1 to 2 line intent, one `Done when:` line (acceptance criteria seeds, the WHAT), checkbox steps.
+**Decide-upfront is the default.** Every scope row is written complete: intent, Done when seeds, and an explicit Needs spec yes/no. When Needs spec is yes, the row also carries decision seeds (topic, options, recommended pick). This lets `/architect` write the spec directly from the seeds without a staged interview, and `/develop` build without a stop-and-ask gate. The interview path exists only for rows that explicitly declare they need it (rare, and only when the engineer opts in).
 
-Feature shape lifecycle: not yet designed → one box, its entry command. On spec capture, `/architect` fills the built ready shape: `Design it (spec)` ticked, spec linked, `Build it: /develop <feature>` with 2 to 5 milestone sub items rolled up from the spec's `## Build plan`, then `Verify it: /check verify <feature>` and `Test it: /test <feature>`. Atomic build tasks stay in the spec's `## Build plan`, never here; every box is a command or tracked milestone. Status: in the table and beside the heading; spec and code pointers once they exist.
+**Write-time validation gate.** Before any row is written, the skill checks it has all required fields. A row that fails is refused, not written with a vague placeholder. The skill reports which row and which fields are missing, and asks for them. No vague rows enter the scope. This is the core fix for spec-to-code stalls: the scope is either complete or it does not get written.
+
+Scope shape, coarse and small: a slim At a glance table (`# · Feature · Phase · Status · Needs spec · specced_at · built_at · verified_at`) + feature sections grouped by phase (see `scope-template.md`). Each section: heading `### N. Name` with short tags only when they matter (`needs a decision`, an approach override, a workflow tier override like `· GA`), a 1 to 2 line intent, one `Done when:` line (acceptance criteria seeds, the WHAT), an explicit `Needs spec: yes/no` line, and when yes, decision seeds (topic, options, recommended pick). Checkbox steps.
+
+Feature shape lifecycle: not yet designed → one box, its entry command. On spec capture, `/architect` fills the built ready shape: `Design it (spec)` ticked, spec linked, `Build it: /develop <feature>` with 2 to 5 milestone sub items rolled up from the spec's `## Build plan`, then `Verify it: /check verify <feature>` and `Test it: /test <feature>`. Atomic build tasks stay in the spec's `## Build plan`, never here; every box is a command or tracked milestone. Status: in the table and beside the heading; spec and code pointers once they exist. Telemetry timestamps (`specced_at`, `built_at`, `verified_at`) written automatically by the owning skill at each transition.
 
 One command, inferred intent (`/scope [what]`, never a subcommand):
 - **plan** (default): no scope yet + a product sized idea, or asking for the next slice. Full pass: ask → decompose into coarse feature sections → order + phase → write.
@@ -26,6 +30,8 @@ One command, inferred intent (`/scope [what]`, never a subcommand):
 ## Asks vs acts
 
 Senior product engineer. Same infer / ask / recommend discipline as `/architect`: INFER what the idea states (category, obvious capabilities); ASK what cannot be inferred across business, product, go to market in batched rounds (up to 4 questions per round; see Decision panels); RECOMMEND build approach, build order, the workflow tier (project default and any per feature override), which need a spec (expert calls: present them, let the engineer override).
+
+**Validation discipline:** When a row lacks required fields (intent, Done when, Needs spec, or decision seeds for a `yes` row), the skill refuses to write it. It reports exactly which fields are missing and asks for them. This is not a vague row that gets discovered later by architect; it is a row that never enters the scope. The skill does not "fill in" vague rows with placeholders.
 
 Never pick tools: no provider, library, ORM, host, or BaaS chosen or named; that is `/architect`'s job per feature in the spec. A feature implying a tool choice is exactly `Needs spec: yes`. Keep the scope tool agnostic so it doesn't rot.
 
