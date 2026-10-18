@@ -1,5 +1,6 @@
 ---
 name: sf-audit
+argument-hint: "[path to an area, or empty for the whole repo]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 description: "Run /sf-audit on a greenfield project, an existing codebase with missing docs, or one area (/sf-audit src/auth) to bootstrap the project's AI context, the AGENTS.md files every later skill reads. Writes tool agnostic AGENTS.md plus thin CLAUDE.md pointers, adding only what is missing; never overwrites curated content."
 metadata:

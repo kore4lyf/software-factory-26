@@ -1,7 +1,8 @@
 ---
 name: sf-factory-run
 allowed-tools: Bash, Read, Grep, Glob, Write, Agent, AskUserQuestion
-description: "Run /sf-factory-run to turn a spec into a finished product with no mid build stops. Two decision modes: engineer decides upfront in one batch, or architect auto picks the recommended option. Build always runs to finish with fallbacks, blockers become follow ups, not stops."
+argument-hint: "[idea, spec, or a path or URL to one]"
+description: "Run /sf-factory-run to turn an idea or a spec into a finished product with no mid build stops. Takes the idea or spec as its argument, inline or as a file path or URL. Two decision modes: engineer decides upfront in one batch, or architect auto picks the recommended option. Build always runs to finish with fallbacks, blockers become follow ups, not stops."
 metadata:
   opencode/slash: "true"
 ---
@@ -80,6 +81,32 @@ Every spawn has the same shape:
 **`FACTORY_ROOT` goes in every spawn.** It is the absolute path to the project's `factory/` folder, and it is never inferred or defaulted. Resolve it once at the start and pass it to every sub agent, along with the write rule each brief carries. A sub agent that guesses its own artifact location is how scope files end up in `docs/` again.
 
 **If you cannot spawn sub-agents,** say so plainly and stop. Do not silently become the worker. A run performed inline is not this skill and carries none of its guarantees.
+
+## What to build
+
+**This is the input. Resolve it before anything else.**
+
+```
+$ARGUMENTS
+```
+
+Whatever followed `/sf-factory-run`. It is the idea or the spec, and it goes to the scope agent as its input. Do not ask what to build, the engineer already said.
+
+Resolve it to real text before you pass it on:
+
+| The argument looks like | Treat it as |
+|---|---|
+| Prose, several sentences | The idea, in the engineer's words. Use it as written |
+| A path that exists, such as `spec.md` or `./docs/brief.md` | Read the file. That is the spec |
+| A URL | Fetch it. That is the spec. A GitHub issue URL is a perfectly good spec |
+| A bare name, such as `clipboard-api` | Look for `factory/scope/<name>.md`, then any matching file in the repo, then treat the name itself as the idea |
+| Empty | Read the repo. An existing `factory/scope/scope.md` means continuing that product. An existing `AGENTS.md` and no scope means a new product in an existing codebase. Say which you concluded, then continue |
+
+Two cases are worth care. **A short idea is not a spec.** "An ecommerce site" is one sentence and carries no decisions, which is exactly what the architect exists to settle, so pass it through as written rather than trying to expand it yourself. And **a long document is not automatically a spec.** If what you were given is a design doc or a requirements list, pass it as the input and let the architect reconcile it against the decision seeds.
+
+Whichever it was, name it back in one line so the engineer can correct you cheaply:
+
+> Starting from: <one line naming what you read, and where it came from>
 
 ## The loop in short
 

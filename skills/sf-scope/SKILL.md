@@ -1,5 +1,6 @@
 ---
 name: sf-scope
+argument-hint: "[idea, feature name, or a path to a spec]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 description: "Run /sf-scope to turn a product idea into a living, coarse scope in factory/scope/ and keep it current: plan a new product, plan the next slice, enroll one named feature, or run with no argument to reconcile after shipping and queue what is next. Seeds WHAT to build; /sf-architect designs, /sf-develop builds."
 metadata:

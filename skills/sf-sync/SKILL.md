@@ -1,5 +1,6 @@
 ---
 name: sf-sync
+argument-hint: "[what to reconcile, or empty for the whole project]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent
 description: "Run /sf-sync as the last step after a change is complete, around merge, to keep durable knowledge current. Updates root and nested AGENTS.md, reconciles the scope from repo evidence, and flags specs the change made stale. Surgical edits only: it adds lines, and rewrites single lines it owns. Never a whole section, never curated prose."
 metadata:

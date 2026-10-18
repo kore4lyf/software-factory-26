@@ -1,5 +1,6 @@
 ---
 name: sf-debug
+argument-hint: "[what is broken, or a path to its log]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent
 description: "Run /sf-debug to find and fix a bug's root cause: a test failing for an unclear reason, /sf-check verify finding a failure, or behavior being wrong. Runs a reproduce, localize, hypothesize, test, fix, verify loop, makes the minimal fix, and hands a regression test to /sf-test. No features, no extra refactors."
 metadata:

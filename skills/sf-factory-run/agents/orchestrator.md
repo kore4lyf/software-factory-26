@@ -27,7 +27,11 @@ The distinction matters. `sf-audit` is per project: run it once, because it writ
 
 ## Starting point
 
-The engineer either says what they want to build, in their own words, or hands you a complete spec. Both are valid inputs. Neither is a question you need answered before you start.
+The idea or spec arrives as this run's input, from `$ARGUMENTS` in the skill: inline prose, a file path, a URL, or a bare feature name. Resolve it to real text before dispatching anything, and name back in one line what you read so a wrong guess costs the engineer one correction rather than a whole run.
+
+Then either the engineer said what they want, or handed you a complete spec. Both are valid inputs, and neither is a question you need answered before you start.
+
+Whatever you resolved becomes `INPUT_SPEC` on the `agents/scope-agent.md` spawn in Step 1. It is the intake station's input, and it is what the whole scope is built from.
 
 ## Where the state lives
 

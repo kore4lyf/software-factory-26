@@ -1,5 +1,6 @@
 ---
 name: sf-develop
+argument-hint: "[feature, component, api, or page]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 description: "Run /sf-develop to build a feature, UI or backend, from an approved design, a page, component, API, service, or data slice. If something load bearing is undecided and no spec records it, it stops and routes you to /sf-architect; otherwise it reads the spec plus AGENTS.md, builds, and advances the scope."
 metadata:

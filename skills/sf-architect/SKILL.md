@@ -1,5 +1,6 @@
 ---
 name: sf-architect
+argument-hint: "[feature, decision, or path to a spec]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 description: "Run /sf-architect when choosing between approaches, designing a feature or page, picking a tech stack, or when /sf-develop says a decision is owed, anytime a load bearing technical decision is unmade. Asks deep questions, recommends an answer, and writes a build spec to factory/specs/. Owns all spec files."
 metadata:

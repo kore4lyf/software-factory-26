@@ -1,5 +1,6 @@
 ---
 name: sf-document
+argument-hint: "[pr | changelog | release-note | postmortem]"
 allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent, AskUserQuestion
 description: "Run /sf-document `pr` | `changelog` | `release-note` | `postmortem` (or let it ask) to write the human facing prose about a change. Drafts from the real commits and diff, writing to the right place. Does not write code, tests, or specs."
 metadata:
