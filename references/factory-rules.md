@@ -33,7 +33,7 @@ When /debug finishes a fix and the root cause traces to a bad decision:
 1. Determine the category (scope template gap, architect checklist gap, reference gap, develop gate gap, or not a factory gap).
 2. Make the surgical edit to the factory file it belongs to.
 3. Add a row to the Rule Updates table above with the date, bug, root cause, file updated, and what changed.
-4. Log the update in `docs/reviews/factory-log.md`.
+4. Log the update in `FACTORY-LOG.md`.
 
 If the decision was reasonable at the time, add a row to the Wont-fix Decisions table instead. No file update needed.
 

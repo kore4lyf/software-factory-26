@@ -12,7 +12,7 @@ The generator produces:
 - `src/lib/auth-client.ts` — Client-side auth helper
 - `src/app/(auth)/sign-in/page.tsx` — Sign-in page
 - `src/app/(auth)/sign-up/page.tsx` — Sign-up page
-- `docs/specs/0001-auth/verify.md` — Verification proof
+- `factory/specs/0001-auth/verify.md` — Verification proof
 
 **Manual steps after generation:**
 ```bash

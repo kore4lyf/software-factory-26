@@ -1,0 +1,14 @@
+# Dependencies. The factory ships as markdown and dependency free scripts.
+node_modules/
+dist/
+
+# Secrets
+.env
+*.db
+
+# Where the skills CLI installs when a project installs them locally.
+# Not the source: skills/ is the source, this is the installed copy.
+.agents/
+.claude/skills/
+.opencode/skills/
+skills-lock.json
