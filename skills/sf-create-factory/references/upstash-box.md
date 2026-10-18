@@ -64,6 +64,20 @@ The template's `sh()` helper in `src/box.mjs` wraps `exec.command`: it appends `
 
 Not used, on purpose: `box.agent.run` and the `agent`, `skills` and `mcpServers` options of `Box.create`. Those configure Upstash's built-in agent runner, which takes provider API keys. The factory runs agent CLIs itself (see `agents.md`). `box.git.*` is also not used, so that the factory controls exactly how the token is handled.
 
+### Credentials: why they are written to a file
+
+Checked against the SDK's own type definitions at 0.7.9, not assumed. Three mechanisms exist and the worker pool rules out all three.
+
+| Mechanism | Verdict |
+|---|---|
+| `exec.command(cmd, { env })` | **Does not exist.** The whole signature is `(command: string)`, no options object. And it is the only fire-and-forget primitive, which is what `runScript` needs |
+| `exec.session({ env })` | Has `env: string[]`, but the session *owns the process*: a dropped connection kills it and sessions cannot be reattached. A detached 25-minute agent run is exactly what that forbids |
+| `Box.create({ attachHeaders })` | The strong one. A transparent proxy injects the secret into outbound HTTPS to one host, write-only, never returned by a GET. The credential never reaches the filesystem and the agent cannot read it. But it is on `EphemeralBoxConfig` only, with no instance method to set it on an existing Box, so it needs a Box created per job |
+
+Changing an agent from a sign-in file to an API key does **not** help. `signIn()` writes both kinds into the same `~/.factory/env` file, so an environment-variable secret lands on disk exactly like a file one.
+
+So with a pre-provisioned, paused worker pool, a file is the only thing left. Going ephemeral per job would enable `attachHeaders` and remove this whole risk class, at the cost of the pool. Boxes are billed while running and pause and resume are what make idle workers free, so that is a cost decision, not a technical one.
+
 ## Browser access
 
 On by default in the template (`factory.browser`). Found the hard way in a real factory, where the first ten workers had to be deleted:

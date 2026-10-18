@@ -9,9 +9,11 @@ Software Factory 26 is a structured system for building software that ships with
 Every skill below lives in `skills/<name>/` and is an installable Agent Skill. Nothing here runs until it is installed. If a skill seems missing, it has not been installed yet:
 
 ```bash
-npx skills add . --list                 # see what is available
-npx skills add . -g -a opencode -y       # install globally, every project
+npx skills add kore4lyf/software-factory-26 --list        # see what is available
+npx skills add kore4lyf/software-factory-26 -g -a opencode -y   # install globally, every project
 ```
+
+Both work from any directory. From inside a clone of this repository, `npx skills add .` installs the same 14 from the working tree, which is what you want when you are changing them.
 
 All 14 skill names carry an `sf-` prefix so they never collide with same named skills already on the machine. The layout under `skills/` is deliberately flat, one directory per skill. A nested phase layout does not survive the installer, so the phase grouping below is documentation only, not a folder structure.
 

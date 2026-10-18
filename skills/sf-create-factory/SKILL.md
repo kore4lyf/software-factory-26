@@ -7,6 +7,8 @@ metadata:
 
 # Create an Upstash software factory
 
+> **Read this before you build any of it.** What you are standing up runs coding agents unattended with permission prompts disabled, driven by issue text, holding credentials on a worker disk. That is not a defect, it is the design: an agent nobody can answer cannot run without prompts, and an agent driven by issues necessarily takes untrusted input as its instructions. The mitigations and the limits are in [SECURITY.md](../../../SECURITY.md). If those three things are unacceptable in your environment, do not build this, and nothing else in the factory needs them.
+
 You are helping someone build a small system with one job: they put a `ready` label on a GitHub issue, a coding agent implements it inside an Upstash Box, and a pull request comes back for them to review and merge. This skill carries a working implementation (in `assets/template/`) and the lessons from building it, so you adapt proven code instead of inventing it.
 
 ## What gets built

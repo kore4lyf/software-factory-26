@@ -39,9 +39,43 @@ if (missing.length) {
   process.exit(1)
 }
 
+// Verify every destination before writing anything. A typo in factory.config.json
+// would otherwise put a live credential on a repository nobody meant to grant it
+// to, and a secret set on a repo is invisible afterwards: gh secret list shows a
+// name, never which repository it is already on.
+const targets = [...new Set(plan.map(([repo]) => repo))]
+const factoryOwner = config.factory.repo.split("/")[0]
+const unreachable = []
+const foreignOwner = []
+
+for (const repo of targets) {
+  const probe = spawnSync("gh", ["repo", "view", repo, "--json", "nameWithOwner,viewerPermission"], { encoding: "utf8" })
+  if (probe.status !== 0) {
+    unreachable.push(repo)
+    continue
+  }
+  if (repo.split("/")[0] !== factoryOwner) foreignOwner.push(repo)
+}
+
+console.log(`\nSecrets to write, by repository:`)
+for (const repo of targets) {
+  const names = [...new Set(plan.filter(([r]) => r === repo).map(([, n]) => n))]
+  console.log(`  ${repo}`)
+  for (const n of names) console.log(`    ${n}`)
+}
+
+if (unreachable.length) {
+  console.error(`\nCannot reach: ${unreachable.join(", ")}. Check the names in factory.config.json.`)
+  process.exit(1)
+}
+if (foreignOwner.length) {
+  console.warn(`\nThese are outside the factory repo's owner "${factoryOwner}": ${foreignOwner.join(", ")}.`)
+  console.warn(`A credential written outside your own organisation is usually a mistake. Check them before continuing.`)
+}
+
 for (const [repo, name, value] of plan) {
   if (!apply) {
-    console.log(`Would set ${name} on ${repo} (${value.length} characters)`)
+    console.log(`\nWould set ${name} on ${repo} (${value.length} characters)`)
     continue
   }
   const result = spawnSync("gh", ["secret", "set", name, "--repo", repo], { input: value, encoding: "utf8" })

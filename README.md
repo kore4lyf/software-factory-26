@@ -4,6 +4,8 @@ An installable software factory. Fourteen skills that take an idea or a GitHub i
 
 Everything the factory writes goes to files in your repo. A session can end, a session can be cleared, and the work is still there because it was never trapped in a conversation.
 
+> **Thirteen of the fourteen skills are markdown and dependency-free scripts that read and write your project. One is not.** `sf-create-factory` builds a host that runs coding agents unattended, with permission prompts disabled and credentials on a worker's disk. That is what it is for, and it is opt-in. **Read [SECURITY.md](SECURITY.md) before you run it.**
+
 ## What this is
 
 One factory with two halves. They are not two products that might be joined up later.
@@ -23,14 +25,33 @@ Full detail in [ARCHITECTURE.md](ARCHITECTURE.md).
 The skills ship as installable Agent Skills and nothing runs until you install them.
 
 ```bash
-# See what is available, without installing anything
-npx skills add . --list
+npx skills add kore4lyf/software-factory-26
+```
 
-# Install all 14 globally, so they work in every project
+That is the whole install. It detects your agent, installs all 14, and asks before writing anything.
+
+To be explicit about scope and agent:
+
+```bash
+# Globally, so the factory works in every project on your machine
+npx skills add kore4lyf/software-factory-26 -g -a opencode -y
+
+# Into just this project, committed so the team gets them too
+npx skills add kore4lyf/software-factory-26 -a opencode -y
+
+# Look before you leap
+npx skills add kore4lyf/software-factory-26 --list
+
+# Just one skill
+npx skills add kore4lyf/software-factory-26 --skill sf-factory-run
+```
+
+Working on the factory itself, from a clone:
+
+```bash
+git clone https://github.com/kore4lyf/software-factory-26
+cd software-factory-26
 npx skills add . -g -a opencode -y
-
-# Or install into just this project, committed so the team gets them too
-npx skills add . -a opencode -y
 ```
 
 Verify, and confirm nothing was written into a skill folder:
@@ -40,12 +61,14 @@ ls ~/.agents/skills | grep sf-     # 14 skills
 npm run check:write-rule            # the write rule holds
 ```
 
+The installer creates a **copy**, not a symlink, because Windows falls back to copying without Developer Mode. So after you edit a skill in the repo, reinstall to pick the change up. It takes ten seconds and the stale copy is silent.
+
 Two things worth knowing. The `sf-` prefix is deliberate, so these skills never collide with same named skills already on your machine. And `skills/` is deliberately flat, one directory per skill, because the installer's catalog layout is unreliable.
 
 For a worker sandbox you will need more than one agent, and the ids are not guessable, `claude-code` not `claude`:
 
 ```bash
-npx skills add . -g -a opencode -a claude-code -a codex -y
+npx skills add kore4lyf/software-factory-26 -g -a opencode -a claude-code -a codex -y
 ```
 
 ## Three ways to use it
@@ -143,12 +166,14 @@ It is a dedicated folder, so there is no docs site detection and no alternative 
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `npm run check:write-rule` | Proves nothing was written inside an installed skill folder |
-| `npm run telemetry` | Cycle time, both spans, and which half is the constraint |
-| `npm run emit:harness-config` | Prints the host config fragments, generated from this repo |
-| `npx skills add . --list` | What is available to install |
+| Command | Runs where | What it does |
+|---|---|---|
+| `npx skills add kore4lyf/software-factory-26 --list` | anywhere | What is available to install |
+| `npm run check:write-rule` | the factory repo | Proves nothing was written inside an installed skill folder |
+| `npm run telemetry` | the factory repo | Cycle time, both spans, and which half is the constraint |
+| `npm run emit:harness-config` | the factory repo | Prints the host config fragments, generated from this repo |
+
+The first works from any directory. The other three are scripts that live in this repository, so they only make sense from a clone of it, which is why `npm run check` is the command to reach for before contributing.
 
 Telemetry reads `specced_at`, `built_at` and `verified_at`, which three different skills already write. It is deterministic, so it costs no tokens and always gives the same answer.
 

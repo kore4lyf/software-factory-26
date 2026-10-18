@@ -6,6 +6,16 @@ import { pathToFileURL } from "node:url"
 const CONFIG_FILE = new URL("../factory.config.json", import.meta.url)
 const MAX_LABEL_LENGTH = 20 // Upstash Box label limit
 
+// Commands in the config run in a shell in the worker. Anything that is not one
+// of these CLIs has to be opted into explicitly, so a compromised or careless
+// config cannot quietly turn into arbitrary shell execution.
+const KNOWN_AGENT_BINARIES = ["claude", "codex", "opencode", "cursor-agent", "amp", "goose", "aider", "gemini", "qwen"]
+
+// Everything the factory writes inside the Box goes under the worker's home.
+// Confining writes to it means a path in the config cannot place a sign-in
+// file, a settings file or a harness file outside the disposable workspace.
+const BOX_HOME = "/workspace/home"
+
 export function loadConfig(file = CONFIG_FILE) {
   const config = JSON.parse(readFileSync(file, "utf8"))
   // Paths in the config (jobFiles, setup scripts) are relative to the config file.
@@ -69,12 +79,27 @@ export function loadConfig(file = CONFIG_FILE) {
     if (agent.command?.includes("{summary}") && agent.promptExtra?.includes("{summary}")) {
       console.warn(`Warning: agent "${name}" fills {summary} both from its command and through promptExtra. Use one, or the two writes overwrite each other.`)
     }
+
+    // The command runs in a shell inside the worker, and it comes from the
+    // config, which is in the repo. That is trusted today, but a compromised
+    // repo would get arbitrary shell execution in a worker holding credentials.
+    // So a command whose first token is not a known agent CLI has to be opted
+    // into by name. Adding a brand new agent still works, it just says so.
+    const known = KNOWN_AGENT_BINARIES.some((bin) => agent.command === bin || agent.command.startsWith(`${bin} `))
+    if (agent.command && !known && agent.allowUnknownCommand !== true) {
+      errors.push(
+        `agent "${name}": the command does not start with a known agent CLI (${KNOWN_AGENT_BINARIES.join(", ")}). ` +
+          `If that is deliberate, set "allowUnknownCommand": true on this agent.`,
+      )
+    }
     for (const file of agent.jobFiles ?? []) {
       if (!file.from || !file.to?.startsWith("/")) errors.push(`agent "${name}": each jobFiles entry needs "from" (a path in this repo) and "to" (an absolute path in the Box)`)
+      else if (!file.to.startsWith(BOX_HOME + "/")) errors.push(`agent "${name}": jobFiles "to" must stay under ${BOX_HOME}/, so a config path cannot write outside the worker's workspace`)
       else if (!existsSync(new URL(file.from, config.baseUrl))) errors.push(`agent "${name}": jobFiles source "${file.from}" does not exist in this repo`)
     }
     for (const entry of agent.auth ?? []) {
       if (!entry.secret || (!entry.env && !entry.file)) errors.push(`agent "${name}": each auth entry needs a secret and an env or a file`)
+      else if (entry.file && !entry.file.startsWith(BOX_HOME + "/")) errors.push(`agent "${name}": auth "file" must be under ${BOX_HOME}/, so a credential cannot be written outside the worker's workspace`)
     }
   }
 
