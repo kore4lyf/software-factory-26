@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "description": "An installable software factory. Fourteen Agent Skills that take an idea or a GitHub issue to shipped, verified, documented code.",
+  "author": "Korede Faleye <https://github.com/kore4lyf>",
   "license": "MIT",
   "scripts": {
     "check": "npm run check:write-rule && npm run check:syntax",

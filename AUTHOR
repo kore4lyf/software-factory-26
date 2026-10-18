@@ -1,0 +1,31 @@
+# Author
+
+**Korede Faleye**
+
+Creator of Software Factory 26.
+
+- GitHub: [@kore4lyf](https://github.com/kore4lyf)
+
+## About this project
+
+Software Factory 26 is an installable software factory: fourteen Agent Skills
+that take an idea or a GitHub issue to shipped, verified, documented code,
+with an orchestrator that delegates the work to sub-agents instead of doing
+it inline.
+
+It is inspired by the JSM engineering workflow and by Leon van Zyl's
+production skills, and it credits both.
+
+## Contributing
+
+Open an issue or a pull request. If you are changing how the factory
+orchestrates, read `ARCHITECTURE.md` first: the two planes, the three seams
+and the one vocabulary are the load-bearing parts, and a change that breaks
+the seam will look fine locally and fail in a worker.
+
+Run `npm run check` before you push. It is dependency-free and takes under a
+second.
+
+## Licence
+
+MIT. See [LICENSE](LICENSE).
