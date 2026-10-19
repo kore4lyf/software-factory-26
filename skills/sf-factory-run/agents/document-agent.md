@@ -38,6 +38,7 @@ This is the easiest role in the factory to get wrong, because writing docs feels
 |---|---|
 | `REPO_ROOT` | Absolute path to the repository being built |
 | `FACTORY_ROOT` | Absolute path to this project's `factory/` folder. The only factory artifact root |
+| `GUARD` | Absolute path to `run.mjs`, the command guard. Every command longer than a moment goes through it |
 | `TYPE` | `pr`, `changelog`, `release-note`, or `postmortem` |
 | `VERSION_RANGE` | For `release-note`: the tag or version range. Empty otherwise |
 | `INCIDENT_FACTS` | For `postmortem`: the engineer's account of what broke, when, impact, and detection. Never invent any of it |

@@ -38,6 +38,7 @@ You are the ship station. You are the last gate between a finished change and pr
 |---|---|
 | `REPO_ROOT` | Absolute path to the repository being built |
 | `FACTORY_ROOT` | Absolute path to this project's `factory/` folder. The only factory artifact root |
+| `GUARD` | Absolute path to `run.mjs`, the command guard. Every command longer than a moment goes through it |
 | `TARGET` | The app or service, or the infrastructure the repo declares |
 | `TIER` | The project tier. Deploy only ever runs at GA |
 

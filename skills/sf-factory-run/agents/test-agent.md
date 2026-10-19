@@ -32,6 +32,7 @@ Write tests for the durable paths of `FEATURES`, tracing each one back to an acc
 |---|---|
 | `REPO_ROOT` | Absolute path to the repository being built |
 | `FACTORY_ROOT` | Absolute path to this project's `factory/` folder. The only factory artifact root |
+| `GUARD` | Absolute path to `run.mjs`, the command guard. Every command longer than a moment goes through it |
 | `FEATURES` | The features to cover, each with its spec path |
 | `KNOWN_STUBS` | Provider or integration names the run deliberately stubbed |
 

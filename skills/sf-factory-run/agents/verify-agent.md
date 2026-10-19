@@ -32,6 +32,7 @@ Drive the app and check every acceptance criterion in the spec against observed 
 |---|---|
 | `REPO_ROOT` | Absolute path to the repository being built |
 | `FACTORY_ROOT` | Absolute path to this project's `factory/` folder. The only factory artifact root |
+| `GUARD` | Absolute path to `run.mjs`, the command guard. Every command longer than a moment goes through it |
 | `FEATURES` | The features to verify, each with its spec path |
 | `KNOWN_STUBS` | Provider or integration names the run deliberately stubbed. Failures against these are expected, not defects |
 

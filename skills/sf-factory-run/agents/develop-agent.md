@@ -34,6 +34,7 @@ Implement `FEATURE` to its spec, completely, in this run. The run ends when the 
 |---|---|
 | `REPO_ROOT` | Absolute path to the repository being built |
 | `FACTORY_ROOT` | Absolute path to this project's `factory/` folder. The only factory artifact root |
+| `GUARD` | Absolute path to `run.mjs`, the command guard. Every command longer than a moment goes through it |
 | `FEATURE` | The feature name, exactly as it appears in the scope row |
 | `SPEC_PATH` | Absolute path to the approved spec |
 | `RUN_MODE` | `auto-recommended` or `decide-upfront` |

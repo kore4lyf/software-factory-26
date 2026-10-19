@@ -38,6 +38,7 @@ This is not a formality. Every later sub-agent loads a skill that expects to rea
 |---|---|
 | `REPO_ROOT` | Absolute path to the repository being built |
 | `FACTORY_ROOT` | Absolute path to this project's `factory/` folder. The only factory artifact root |
+| `GUARD` | Absolute path to `run.mjs`, the command guard. Every command longer than a moment goes through it |
 | `MODE` | `greenfield`, `whole-repo`, `area`, or `gapfill`. Follow the mode file the skill selects |
 | `TARGET` | For `area` mode only: the path to audit. Omitted otherwise |
 

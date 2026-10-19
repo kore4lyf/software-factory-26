@@ -79,6 +79,10 @@ Every spawn has the same shape:
 - `description`: `<role>: <feature, change, or "whole project">`
 - model: a capable tier for develop, a cheaper one for scope, verify, scout and researcher. Never inherit the session model blindly
 
+**Every spawn gets `GUARD`,** the absolute path to `scripts/run.mjs` inside this skill, alongside `FACTORY_ROOT`. It is what keeps a station from stalling on a server or a runaway command, and it is a plain script so it works the same whatever agent is running the factory. Every station brief has a row for it in its Inputs table and a section explaining it, so a station that follows its brief has everything it needs. The two read-only briefs get no `GUARD` because they have no shell and run no commands.
+
+**Reap orphans between stations.** Before the next spawn, run `node "<GUARD>" reap --cwd "<REPO_ROOT>"`. That kills any server a previous station left running, so one station's leftover process cannot bleed into the next one's results. A station is told to stop what it starts, but one that hung or was killed will not have, and this is the backstop.
+
 **Grant tools by role.** This is the one place the boundary is structural rather than written down, so it does not depend on a sub-agent deciding to respect it.
 
 | Brief | Tools |

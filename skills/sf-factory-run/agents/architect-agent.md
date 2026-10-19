@@ -32,6 +32,7 @@ Write or update the feature's spec in `factory/specs/`. One feature per spawn. T
 |---|---|
 | `REPO_ROOT` | Absolute path to the repository being built |
 | `FACTORY_ROOT` | Absolute path to this project's `factory/` folder. The only factory artifact root |
+| `GUARD` | Absolute path to `run.mjs`, the command guard. Every command longer than a moment goes through it |
 | `FEATURE` | The feature name, exactly as it appears in the scope row |
 | `SPEC_PATH` | Absolute path of the spec to write, or `none` if the scope has no pointer yet |
 | `SCOPE_PATH` | Absolute path to `factory/scope/scope.md` |

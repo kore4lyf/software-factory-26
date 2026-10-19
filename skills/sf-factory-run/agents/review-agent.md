@@ -44,6 +44,7 @@ Never describe a same model review as independent. The orchestrator relays your 
 |---|---|
 | `REPO_ROOT` | Absolute path to the repository being built |
 | `FACTORY_ROOT` | Absolute path to this project's `factory/` folder. The only factory artifact root |
+| `GUARD` | Absolute path to `run.mjs`, the command guard. Every command longer than a moment goes through it |
 | `DIFF_SCOPE` | `branch` or `uncommitted` |
 | `BASE` | Base branch, usually `main` else `master` |
 | `MERGE_BASE` | The merge base commit |

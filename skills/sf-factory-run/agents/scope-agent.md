@@ -32,6 +32,7 @@ Produce or reconcile `factory/scope/scope.md` so every feature row is complete e
 |---|---|
 | `REPO_ROOT` | Absolute path to the repository being built |
 | `FACTORY_ROOT` | Absolute path to this project's `factory/` folder. The only factory artifact root |
+| `GUARD` | Absolute path to `run.mjs`, the command guard. Every command longer than a moment goes through it |
 | `INPUT_SPEC` | The engineer's idea, in their words. May be empty if scope already exists |
 | `RUN_MODE` | `auto-recommended` or `decide-upfront` |
 | `EXISTING_SCOPE` | `none`, or the absolute path to the current `scope.md` |
