@@ -40,9 +40,12 @@
  *
  * SUBCOMMANDS
  *
- *   run.mjs exec  [--timeout <s>] [--cwd <dir>] [--log <file>] -- <cmd> [args]
- *       Run a command with a hard deadline. Always returns, with the tail of
- *       its output. Exits 0 on success, 124 on timeout, else the command's code.
+ *   run.mjs exec  [--idle <s>] [--max-runtime <s>] [--cwd <dir>] -- <cmd> [args]
+ *       Run a command under a watchdog that measures SILENCE, not duration.
+ *       A slow task that keeps printing is left alone. A task that stops
+ *       making progress is killed. Returns the tail of the output and the
+ *       command's own exit code: 0 on success, 124 when killed, else the
+ *       command's code.
  *
  *   run.mjs serve --name <slug> [--port <n>] [--health <url>] [--cwd <dir>]
  *                 [--timeout <s>] -- <cmd> [args]
@@ -56,7 +59,8 @@
  *
  * EXAMPLES
  *
- *   node run.mjs exec --timeout 300 -- npm test
+ *   node run.mjs exec -- npm test
+ *   node run.mjs exec --idle 600 -- playwright test
  *   node run.mjs serve --name web --port 3000 -- npm run dev
  *   node run.mjs status --name web
  *   node run.mjs stop --name web
@@ -165,12 +169,13 @@ function tailFile(file, bytes = TAIL_BYTES) {
 
 async function cmdExec(opts) {
   if (!opts.command?.length) {
-    console.error("run.mjs exec: no command. Usage: run.mjs exec [--timeout s] -- <cmd> [args]")
+    console.error("run.mjs exec: no command. Usage: run.mjs exec [--idle s] [--max s] -- <cmd> [args]")
     done(2)
-  return
+    return
   }
   const cwd = resolve(opts.cwd ?? ".")
-  const timeoutMs = Number(opts.timeout ?? 300) * 1000
+  const idleMs = Number(opts.idle ?? 300) * 1000
+  const maxMs = Number(opts["max-runtime"] ?? 3600) * 1000
   mkdirSync(cacheDir(cwd), { recursive: true })
   const log = resolve(opts.log ?? join(cacheDir(cwd), `${Date.now()}-cmd.log`))
 
@@ -189,28 +194,89 @@ async function cmdExec(opts) {
   })
 
   const started = Date.now()
-  let timedOut = false
   let code = null
+  let reason = null // "silent" | "overall"
 
+  let settle
   const exited = new Promise((res) => {
+    settle = res
     child.on("exit", (c) => { code = c; res() })
     // Belt and braces: if the kill races the exit event, settle anyway rather
     // than letting the whole guard hang on a process that is already gone.
     child.on("error", () => { code = code ?? null; res() })
   })
-  const timer = setTimeout(() => { timedOut = true; killTree(child.pid) }, timeoutMs)
+
+  // The watchdog measures SILENCE, not duration.
+  //
+  // A slow test suite is not a hung one. A suite that takes twenty minutes and
+  // prints progress the whole way is working, and killing it for being slow is
+  // exactly the false failure this avoids. What distinguishes a hang is that
+  // the command stops making progress, so that is what we watch: the log stops
+  // growing and nothing is left to suggest it will ever finish.
+  //
+  // Two limits, because they catch different things:
+  //   --idle         seconds with no new output. Catches the real hang: a dead
+  //                  server, a silent infinite loop, a REPL awaiting input.
+  //   --max-runtime  total wall clock, a generous backstop. Catches a runaway
+  //                  that keeps printing forever and so never looks idle.
+  let lastSize = -1
+  let lastProgressAt = started
+  const watchdog = setInterval(() => {
+    const now = Date.now()
+    let size = 0
+    try { size = statSync(log).size } catch {}
+
+    // The ceiling is checked FIRST and unconditionally. A runaway that prints
+    // forever makes progress every single tick, so if the ceiling check sat
+    // behind the progress early-return it would never be reached and the
+    // command would run forever, which is the exact failure this file exists
+    // to prevent. Progress may buy the command more time; it may not buy it
+    // unlimited time.
+    if (now - started > maxMs) {
+      reason = "overall"
+      clearInterval(watchdog)
+      killTree(child.pid)
+      settle()
+      return
+    }
+
+    if (size !== lastSize) {
+      lastSize = size
+      lastProgressAt = now
+      return // it made progress, stay quiet
+    }
+
+    if (now - lastProgressAt > idleMs) {
+      reason = "silent"
+    } else {
+      return
+    }
+
+    clearInterval(watchdog)
+    killTree(child.pid)
+    settle()
+  }, 1000)
+
   await exited
-  clearTimeout(timer)
+  clearInterval(watchdog)
   closeSync(out)
 
   const elapsed = ((Date.now() - started) / 1000).toFixed(1)
   const tail = tailFile(log)
 
-  if (timedOut) {
-    console.error(`TIMEOUT  ${opts.command.join(" ")} exceeded ${opts.timeout ?? 300}s after ${elapsed}s. Process tree killed.`)
+  if (reason === "silent") {
+    console.error(`TIMEOUT  ${opts.command.join(" ")} produced no output for ${opts.idle ?? 300}s and was killed at ${elapsed}s.`)
+    console.error(`That is a hang, not a slow task. A slow task keeps printing.`)
     console.error(tail)
     done(EXIT_TIMEOUT)
-  return
+    return
+  }
+  if (reason === "overall") {
+    console.error(`TIMEOUT  ${opts.command.join(" ")} ran past --max-runtime ${opts["max-runtime"] ?? 3600}s and was killed at ${elapsed}s.`)
+    console.error(`It kept producing output the whole way, so this is a runaway, not a hang.`)
+    console.error(tail)
+    done(EXIT_TIMEOUT)
+    return
   }
 
   console.error(`EXIT ${code}  ${opts.command.join(" ")} (${elapsed}s)`)

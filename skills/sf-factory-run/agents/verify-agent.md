@@ -112,7 +112,7 @@ Every command that could run for more than a couple of seconds goes through it. 
 
 | You want to | Run |
 |---|---|
-| a build, test suite, install, migration, or anything that could take minutes | `node "$GUARD" exec --timeout 300 -- <command>` |
+| a build, test suite, install, migration, or anything that could take minutes | `node "$GUARD" exec -- <command>` |
 | a server, watcher, or anything that stays up while you test it | `node "$GUARD" serve --name <short-slug> --port <n> -- <command>` |
 | check or stop a server you started | `node "$GUARD" status --name <slug>` / `node "$GUARD" stop --name <slug>` |
 
@@ -121,7 +121,8 @@ Raise `--timeout` for a genuinely long task. Do not wrap a command in `&`, `Star
 Two rules that go with it:
 
 - **Start what you need, stop what you started.** If you `serve` something, `stop` it before you return. The orchestrator also reaps orphans between stations, so a leftover server is cleaned up, but the tidier path is yours.
-- **A 124 is a finding, not a nuisance.** It means the command overran its budget. Report it, do not just retry with a bigger number and hope.
+- **A slow task is not a hung task.** The guard kills a command that stops producing output, not one that is merely slow. A test suite that takes twenty minutes and prints progress the whole way runs to completion untouched. If a suite buffers all its output and stays silent for a long stretch, raise the silence limit with `--idle <seconds>` rather than assuming a hang.
+- **Two ways it can report 124, and they mean different things.** "produced no output for Ns" is a genuine hang. "ran past --max-runtime" is a runaway that kept printing, so raise `--max-runtime` if the task is legitimately enormous. Report either; do not silently retry with bigger numbers.
 
 ---
 
