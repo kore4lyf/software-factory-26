@@ -176,17 +176,28 @@ async function cmdExec(opts) {
 
   // Detach from the parent's stdio and give the child its own file, so a
   // descendant that outlives the command can never hold the tool's pipe open.
+  // The child's own stdio is a file, never our pipe: that is the fix.
+  //
+  // Do NOT unref here. exec waits for the child, and unref detaches the parent
+  // from the child's 'exit' event, so `exited` never resolves. The event loop
+  // then drains and node exits silently with the default code 0. That is a
+  // guard that reports nothing about a command it killed, which is worse than
+  // no guard. unref belongs in serve, which exits on its own schedule.
   const out = openSync(log, "a")
   const child = spawn(opts.command[0], opts.command.slice(1), {
     cwd, detached: true, stdio: ["ignore", out, out], windowsHide: true,
   })
-  child.unref()
 
   const started = Date.now()
   let timedOut = false
   let code = null
 
-  const exited = new Promise((res) => child.on("exit", (c) => { code = c; res() }))
+  const exited = new Promise((res) => {
+    child.on("exit", (c) => { code = c; res() })
+    // Belt and braces: if the kill races the exit event, settle anyway rather
+    // than letting the whole guard hang on a process that is already gone.
+    child.on("error", () => { code = code ?? null; res() })
+  })
   const timer = setTimeout(() => { timedOut = true; killTree(child.pid) }, timeoutMs)
   await exited
   clearTimeout(timer)
