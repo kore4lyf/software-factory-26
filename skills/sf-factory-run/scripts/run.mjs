@@ -40,12 +40,22 @@
  *
  * SUBCOMMANDS
  *
- *   run.mjs exec  [--idle <s>] [--max-runtime <s>] [--cwd <dir>] -- <cmd> [args]
+ *   run.mjs exec  [--kind <kind>] [--idle <s>] [--max-runtime <s>] [--cwd <dir>]
+ *                 -- <cmd> [args]
  *       Run a command under a watchdog that measures SILENCE, not duration.
  *       A slow task that keeps printing is left alone. A task that stops
  *       making progress is killed. Returns the tail of the output and the
  *       command's own exit code: 0 on success, 124 when killed, else the
  *       command's code.
+ *
+ *       Budget resolution, highest precedence first:
+ *         --idle / --max-runtime   explicit, always wins
+ *         --kind <kind>            that kind's budget (see KINDS below)
+ *         default                  300s silence, 3600s ceiling
+ *
+ *       The default is deliberately generous, because the failure it must
+ *       avoid is killing a healthy command. Prefer passing --kind, or an
+ *       explicit --idle when you know the command, over relying on it.
  *
  *   run.mjs serve --name <slug> [--port <n>] [--health <url>] [--cwd <dir>]
  *                 [--timeout <s>] -- <cmd> [args]
@@ -59,7 +69,8 @@
  *
  * EXAMPLES
  *
- *   node run.mjs exec -- npm test
+ *   node run.mjs exec --kind test -- npm test
+ *   node run.mjs exec --kind install -- npm ci
  *   node run.mjs exec --idle 600 -- playwright test
  *   node run.mjs serve --name web --port 3000 -- npm run dev
  *   node run.mjs status --name web
@@ -167,15 +178,59 @@ function tailFile(file, bytes = TAIL_BYTES) {
 
 // ---------------------------------------------------------------------------
 
+// How long a command may go without producing output before we call it stuck.
+//
+// The number is the caller's to set, because the caller knows the command, but
+// the two that matter differ by kind. A build prints constantly and goes quiet
+// for long stretches while it links; an install on a slow network may sit for
+// minutes between lines and is perfectly healthy. So idle is generous by
+// default and only tightens when silence really does mean dead.
+//
+// Assign silence, not total runtime. "How long should this take" is unknowable
+// in advance and gets guessed wrong in both directions. "How long may this go
+// without saying anything" is knowable, and a command that is slow but alive
+// keeps talking, so it survives however long it takes.
+const KINDS = {
+  //                 idle    ceiling   rationale
+  install: [900, 3600], // network stalls between packages are long and normal
+  test: [600, 3600], // runners buffer; a quiet minute can still be working
+  build: [300, 1800], // prints while it works, can go quiet while linking
+  migrate: [300, 1800], // like build, but killing it is destructive
+  codegen: [300, 1800], // ditto
+  lint: [120, 600], // fast, talks, should never be quiet for two minutes
+  quick: [60, 300], // a one-liner or a single-file check
+}
+
+// The default, used when the caller names neither a --kind nor a custom time.
+//
+// This is the number that has to be right on its own, because most callers
+// will not think about it. It is deliberately generous, because the failure it
+// must avoid is killing a healthy command: a build that is slow but printing is
+// fine and should never be touched, and erring toward waiting costs only a
+// little time on the rare real hang. Five minutes of total silence is far
+// longer than any working command that is actually talking needs, so it only
+// fires when something is genuinely stuck. The one hour ceiling behind it
+// catches the rarer runaway that keeps printing forever and so never looks
+// idle; nothing legitimate in this factory runs that long unattended.
+const DEFAULT_IDLE = 300
+const DEFAULT_MAX_RUNTIME = 3600
+
 async function cmdExec(opts) {
   if (!opts.command?.length) {
-    console.error("run.mjs exec: no command. Usage: run.mjs exec [--idle s] [--max s] -- <cmd> [args]")
+    console.error("run.mjs exec: no command. Usage: run.mjs exec [--kind install|test|build|lint|quick] [--idle s] [--max-runtime s] -- <cmd> [args]")
     done(2)
     return
   }
   const cwd = resolve(opts.cwd ?? ".")
-  const idleMs = Number(opts.idle ?? 300) * 1000
-  const maxMs = Number(opts["max-runtime"] ?? 3600) * 1000
+  const kind = opts.kind && KINDS[opts.kind] ? opts.kind : null
+  if (opts.kind && !kind) {
+    console.error(`Unknown --kind "${opts.kind}". Use one of: ${Object.keys(KINDS).join(", ")}`)
+    done(2)
+    return
+  }
+  const [kIdle, kMax] = kind ? KINDS[kind] : [DEFAULT_IDLE, DEFAULT_MAX_RUNTIME]
+  const idleMs = Number(opts.idle ?? kIdle) * 1000
+  const maxMs = Number(opts["max-runtime"] ?? kMax) * 1000
   mkdirSync(cacheDir(cwd), { recursive: true })
   const log = resolve(opts.log ?? join(cacheDir(cwd), `${Date.now()}-cmd.log`))
 
@@ -265,14 +320,16 @@ async function cmdExec(opts) {
   const tail = tailFile(log)
 
   if (reason === "silent") {
-    console.error(`TIMEOUT  ${opts.command.join(" ")} produced no output for ${opts.idle ?? 300}s and was killed at ${elapsed}s.`)
-    console.error(`That is a hang, not a slow task. A slow task keeps printing.`)
+    const budget = Math.round(idleMs / 1000)
+    console.error(`TIMEOUT  ${opts.command.join(" ")} produced no output for ${budget}s and was killed at ${elapsed}s.${kind ? ` (--kind ${kind})` : ""}`)
+    if (kind) console.error(`A ${kind} normally stays alive, so silence this long is a real stall. If ${kind} genuinely goes quiet that long on a bad network, raise it: --idle <seconds>.`)
+    else console.error(`That is a hang, not a slow task. A slow task keeps printing.`)
     console.error(tail)
     done(EXIT_TIMEOUT)
     return
   }
   if (reason === "overall") {
-    console.error(`TIMEOUT  ${opts.command.join(" ")} ran past --max-runtime ${opts["max-runtime"] ?? 3600}s and was killed at ${elapsed}s.`)
+    console.error(`TIMEOUT  ${opts.command.join(" ")} ran past --max-runtime ${Math.round(maxMs / 1000)}s and was killed at ${elapsed}s.${kind ? ` (--kind ${kind})` : ""}`)
     console.error(`It kept producing output the whole way, so this is a runaway, not a hang.`)
     console.error(tail)
     done(EXIT_TIMEOUT)

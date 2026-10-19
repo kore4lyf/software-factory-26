@@ -124,16 +124,30 @@ Every command that could run for more than a couple of seconds goes through it. 
 
 | You want to | Run |
 |---|---|
-| a build, test suite, install, migration, or anything that could take minutes | `node "$GUARD" exec -- <command>` |
+| a build, test suite, install, migration, or anything that could take minutes | `node "$GUARD" exec --kind <kind> -- <command>` |
 | a server, watcher, or anything that stays up while you test it | `node "$GUARD" serve --name <short-slug> --port <n> -- <command>` |
 | check or stop a server you started | `node "$GUARD" status --name <slug>` / `node "$GUARD" stop --name <slug>` |
+
+**Pass `--kind`, not a number.** You know the command; the guard knows how that kind of command behaves. The number decides how long the command may go *without producing any output* before it is called stuck, and that differs by kind: an install on a bad network goes quiet for long stretches and is still healthy, while a linter that says nothing for two minutes is dead.
+
+| `--kind` | Silent budget | Ceiling | Use for |
+|---|---|---|---|
+| `install` | 900s | 3600s | dependency installs, where network stalls are long and normal |
+| `test` | 600s | 3600s | test suites, which often buffer output between runs |
+| `build` | 300s | 1800s | builds and compiles, which go quiet while linking |
+| `migrate`, `codegen` | 300s | 1800s | anything that writes state, so killing it is destructive |
+| `lint`, `quick` | 60 to 120s | 300 to 600s | fast checks that should never be quiet |
+
+This is about silence, not total time. A slow task keeps printing, so it runs for as long as it honestly needs and is never killed for being slow. If you pass neither `--kind` nor `--idle`, the guard uses its own default of 300s of silence and a 1 hour ceiling. That default is deliberately generous so it never kills a healthy command, but passing the kind you know is better. Raise or lower it with `--idle <seconds>` when you know better still, and raise `--max-runtime` for a genuinely enormous task.
 
 Raise `--timeout` for a genuinely long task. Do not wrap a command in `&`, `Start-Process -NoNewWindow`, or the shell's background flag to "avoid blocking"; that is the exact thing that causes the hang.
 
 Two rules that go with it:
 
 - **Start what you need, stop what you started.** If you `serve` something, `stop` it before you return. The orchestrator also reaps orphans between stations, so a leftover server is cleaned up, but the tidier path is yours.
-- **A slow task is not a hung task.** The guard kills a command that stops producing output, not one that is merely slow. A test suite that takes twenty minutes and prints progress the whole way runs to completion untouched. If a suite buffers all its output and stays silent for a long stretch, raise the silence limit with `--idle <seconds>` rather than assuming a hang.
+- **A slow task is not a hung task.** The guard kills a command that stops producing output, not one that is merely slow. A suite that takes twenty minutes and prints progress the whole way runs to completion untouched.
+- **If you kill something that writes state, say so.** An install, a migration or a codegen run leaves partial state behind when killed. Do not report it as a plain timeout and move on: say which command was killed and what state it may have left, so the next station does not build on a half-written tree.
+- **A failed install is usually transient.** One retry with `--kind install` often succeeds where the first attempt died on a bad network. A package that genuinely does not exist still fails, and it fails with the real error, which is the useful one.
 - **Two ways it can report 124, and they mean different things.** "produced no output for Ns" is a genuine hang. "ran past --max-runtime" is a runaway that kept printing, so raise `--max-runtime` if the task is legitimately enormous. Report either; do not silently retry with bigger numbers.
 
 ---
