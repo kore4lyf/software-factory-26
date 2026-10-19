@@ -290,6 +290,16 @@ Append one line to `## Loop log` per dispatch as it returns, one line to `## Che
 
 `FACTORY_ROOT` is the absolute path to this project's `factory/` folder. Pass it in every spawn, never infer it.
 
+`GUARD` is the absolute path to the factory's command guard, `scripts/run.mjs` inside this skill. Pass it in every spawn too. It is what keeps a station from stalling on a server or a runaway command, and it works the same whatever agent is running the factory.
+
+**Reap orphans between stations.** Before you spawn the next station, run:
+
+```
+node "<GUARD>" reap --cwd "<REPO_ROOT>"
+```
+
+That kills any server a previous station left running, so one station's leftover process cannot bleed into the next one's results. A station is told to stop what it starts, but a station that hung or was killed will not have done so, and this is the backstop.
+
 **Writable:** `FACTORY_ROOT/runs/<run-id>.md`, nothing else. That file is the run's record.
 
 **Never writable: the skill folder.** The skills are installed outside the project, shared across every project on this machine, and destroyed on the next reinstall. You have just read this guide and your briefs from that folder, so it is the freshest path in your context and it will look like a reasonable place to leave a note. It is not. Treat every path under a skill directory as read only, always.

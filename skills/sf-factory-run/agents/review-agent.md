@@ -106,6 +106,29 @@ Two rules that cover everything above:
 
 ---
 
+## Every command goes through the guard
+
+`GUARD` is the absolute path to the factory's command guard, passed in with your placeholder values. It is a plain script. It runs **any** command, in **any** language, under **any** agent, and it is the same everywhere.
+
+Every command that could run for more than a couple of seconds goes through it. None of these are ever run bare, in the foreground, with `&`, `nohup`, `Start-Process`, or a background flag.
+
+**Why, in one paragraph:** a bare long-lived command (a server, a watcher, a REPL, an infinite loop) inherits the shell's output pipe and never returns. You wait for a result that is never coming, so you stop producing feedback, the orchestrator waits on you, and the whole run stalls with nothing to show for it. The guard removes that failure by giving the command a hard deadline, killing the process tree if it overruns, and always handing the output back. `exec` returns an exit code (124 if it timed out). `serve` detaches a server so it can never hold the pipe at all.
+
+| You want to | Run |
+|---|---|
+| a build, test suite, install, migration, or anything that could take minutes | `node "$GUARD" exec --timeout 300 -- <command>` |
+| a server, watcher, or anything that stays up while you test it | `node "$GUARD" serve --name <short-slug> --port <n> -- <command>` |
+| check or stop a server you started | `node "$GUARD" status --name <slug>` / `node "$GUARD" stop --name <slug>` |
+
+Raise `--timeout` for a genuinely long task. Do not wrap a command in `&`, `Start-Process -NoNewWindow`, or the shell's background flag to "avoid blocking"; that is the exact thing that causes the hang.
+
+Two rules that go with it:
+
+- **Start what you need, stop what you started.** If you `serve` something, `stop` it before you return. The orchestrator also reaps orphans between stations, so a leftover server is cleaned up, but the tidier path is yours.
+- **A 124 is a finding, not a nuisance.** It means the command overran its budget. Report it, do not just retry with a bigger number and hope.
+
+---
+
 ## What you return
 
 Return this block and nothing else after it. Keep it under 20 lines.

@@ -9,7 +9,7 @@
   "scripts": {
     "check": "npm run check:write-rule && npm run check:syntax",
     "check:write-rule": "node scripts/check-skill-writes.mjs",
-    "check:syntax": "node --check scripts/check-skill-writes.mjs && node --check scripts/telemetry.mjs && node --check scripts/emit-harness-config.mjs && node --check scripts/footprint.mjs && node --check .opencode/plugins/factory-guard.js && node --check .opencode/plugins/factory-compact.js",
+    "check:syntax": "node --check scripts/check-skill-writes.mjs && node --check scripts/telemetry.mjs && node --check scripts/emit-harness-config.mjs && node --check scripts/footprint.mjs && node --check skills/sf-factory-run/scripts/run.mjs && node --check .opencode/plugins/factory-guard.js && node --check .opencode/plugins/factory-compact.js",
     "telemetry": "node scripts/telemetry.mjs",
     "emit:harness-config": "node scripts/emit-harness-config.mjs"
   },
