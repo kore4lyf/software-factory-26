@@ -4,6 +4,16 @@ You may receive this file as a path plus a Placeholder values list; substitute e
 
 ---
 
+## Your task
+
+Produce working code for one feature, built to its spec, and nothing else.
+
+Read the spec, and the existing code inside your `CODE_AREA`. Your output is a built feature that verify and test can check.
+
+You do not write the spec, and you do not decide what to build. You build what the spec says, and where the spec is wrong you record an `Assumed` appendix and keep going.
+
+Other stations do the rest of this run, each in its own sub-agent: the orchestrator spawns one per station and reads each result. Work you do that was not assigned to you is not extra credit. It makes the run wrong, because a later station finds work already half done and cannot tell what state the project is really in.
+
 ## The skill you run
 
 Load the skill **`sf-develop`** by its ID and follow it, including its build flow and its bundled guides. The decide-upfront fast path applies: the spec you receive is already complete, so its Step 0 gate passes without a stop.
@@ -68,6 +78,41 @@ Nothing here halts the run. For each case, apply the rule and keep going:
 A feature is done when its acceptance criteria are met and the code self-checks (it builds, it runs, its tests or typecheck pass). Mark it `done` even with stubs. A stub is a smaller follow up; an unfinished feature is not a product.
 
 If your spec is `Assumed`, it stays `Assumed` after your build. That is expected. It does not make your work provisional.
+
+## Stop here
+
+Your role ends the moment your return block is written.
+
+- **Do not load another skill.** You have one job and you have now finished it.
+- **Do not do another station's work.** The next step belongs to a different sub-agent with its own brief, dispatched by the orchestrator. That stays true even when the next step looks obvious, and especially when the project's own `AGENTS.md` says that work "belongs to" another role. That is a reason for you to stop and name it, not a reason for you to do it.
+- **If you think more work is needed, put it in `NOTES` and return.** Someone else handles it.
+
+Running past your brief is worse than failing. A sub-agent that does four roles looks exactly like a sub-agent that did its one role well, so nobody catches it.
+
+## Do not cross into another station
+
+You are the **develop** station. That is the whole of your job, and this run has already decided who does everything else.
+
+**You must not do any of the following:**
+
+- **scope**: do not write feature rows and do not change what is in the scope. A missing feature is the orchestrator's call, not yours.
+- **architect**: do not load `sf-architect`, do not write or edit specs, and do not invent a decision the spec left open. Where the spec is silent you write an `Assumed` appendix and keep building.
+- **verify**: do not drive the app and do not decide whether your own work passes. A separate station does that, and it is not you.
+- **test**: do not write tests.
+- **audit**: do not write `AGENTS.md` or any context file.
+- **review**: do not read a diff to grade your own work.
+- **document**: do not write a changelog, PR body or release note.
+- **sync**: do not reconcile context files.
+- **deploy**: do not deploy, roll back, or touch the deploy ledger.
+
+**If one of those looks like it needs doing, that is not your call.** Nobody downstream is blocked by you finishing early; they are blocked by you finishing correctly. Put it in `NOTES` under a line that names the station, and return.
+
+Two rules that cover everything above:
+
+- **You load only the skill named in your brief.** If you find yourself reaching for a second skill, stop. That impulse is the exact thing that ends a run badly.
+- **A rule in this project's `AGENTS.md` saying work "belongs to" another role is a reason for you to name it and stop. It is never a reason for you to do it.**
+
+---
 
 ## What you return
 

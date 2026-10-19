@@ -137,14 +137,21 @@ At the end, what remains is a list of open defects and a product that runs. That
 
 ## Decision mode
 
-Chosen once, at the start, and it governs every sub-agent:
+**Ask the engineer, every run, before anything else.** This is the one question a factory run starts with, and the engineer answers it, not you.
 
-| Mode | Behaviour |
-|---|---|
-| `auto-recommended` (default) | Each architect takes the option it would have recommended, writes it into the spec with a one line reason, and tags it for review. Nobody is interrupted. |
-| `decide-upfront` | Collect every load-bearing question across all features into one batch panel, engineer answers once, then the build never asks again. |
+Ask it once, at the start, and never again:
 
-Record the mode in `factory/runs/<run-id>.md`.
+- **question**: "How should decisions be handled on this run?"
+- **header**: "factory mode"
+- **options**:
+  1. `I decide upfront` (recommended for your first run): "Every decision the factory faces comes to you, in one batch at the start. Slower, and you stay in control of the architecture."
+  2. `Auto recommended`: "The factory makes each call itself, records the reasoning in the spec, and flags it so you can review at the end. Faster, and you review afterwards."
+
+**Never choose for them.** There is a default in the config and you may recommend it, but you must not act on it, and you must not proceed on the assumption that silence means consent. Choosing `Auto recommended` because the engineer did not answer, or because it is faster, or because you think it is obviously better, is exactly the failure this factory exists to avoid. The whole point is that the engineer decides whether they make the architecture calls or the factory does. That is not a detail you can infer.
+
+Record the answer in `factory/runs/<run-id>.md` before dispatching anything. Every architect sub-agent reads it from there and obeys it.
+
+If the engineer's answer cannot be obtained, stop and say so. Do not run on a default you picked.
 
 ## Never stop
 

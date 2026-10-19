@@ -70,15 +70,28 @@ Each role has a brief in `agents/`. Resolve this skill's folder to an absolute p
 | `agents/document-agent.md` | `sf-document` | per change, GA |
 | `agents/deploy-agent.md` | `sf-deploy-app` | per change, GA, never in a sandbox |
 | `agents/sync-agent.md` | `sf-sync` | around merge |
+| `agents/scout-agent.md` | none, it is not a station | on demand, for code maps |
+| `agents/researcher-agent.md` | none, it is not a station | on demand, for current facts |
 
 Every spawn has the same shape:
 
 - `prompt`: the brief's absolute path, then `Placeholder values:` and the labeled list that brief asks for
 - `description`: `<role>: <feature, change, or "whole project">`
-- `tools`: as the brief specifies. Review, verify, and document get no `Edit`; they report, they do not fix
-- model: a capable tier for develop, a cheaper one for scope, verify, and audit. Never inherit the session model blindly
+- model: a capable tier for develop, a cheaper one for scope, verify, scout and researcher. Never inherit the session model blindly
+
+**Grant tools by role.** This is the one place the boundary is structural rather than written down, so it does not depend on a sub-agent deciding to respect it.
+
+| Brief | Tools |
+|---|---|
+| `scout-agent.md`, `researcher-agent.md` | `Read`, `Grep`, `Glob`, and a web fetch tool. **No `Write`, no `Edit`, no `Bash`** |
+| `verify-agent.md`, `review-agent.md`, `document-agent.md` | `Read`, `Grep`, `Glob`, `Bash`, and whatever drives the app. **No `Edit`** |
+| `scope-agent.md`, `architect-agent.md`, `develop-agent.md`, `test-agent.md`, `sync-agent.md`, `deploy-agent.md` | Full set |
+
+A read-only role that asks to write has a tooling bug, not a discipline problem. Answer it by not granting the tool.
 
 **`FACTORY_ROOT` goes in every spawn.** It is the absolute path to the project's `factory/` folder, and it is never inferred or defaulted. Resolve it once at the start and pass it to every sub agent, along with the write rule each brief carries. A sub agent that guesses its own artifact location is how scope files end up in `docs/` again.
+
+**Check the artifact, do not trust the claim.** After a station returns, confirm the file it said it wrote actually exists before dispatching the next station. A station that ran past its brief looks exactly like one that did its job well, so the returning block is not evidence. One directory listing is cheap, and it turns a breach that used to surface at the end of a run into a caught mistake at that step.
 
 **If you cannot spawn sub-agents,** say so plainly and stop. Do not silently become the worker. A run performed inline is not this skill and carries none of its guarantees.
 
@@ -102,6 +115,12 @@ Resolve it to real text before you pass it on:
 | A bare name, such as `clipboard-api` | Look for `factory/scope/<name>.md`, then any matching file in the repo, then treat the name itself as the idea |
 | Empty | Read the repo. An existing `factory/scope/scope.md` means continuing that product. An existing `AGENTS.md` and no scope means a new product in an existing codebase. Say which you concluded, then continue |
 
+**One case needs care, because it is silent when you get it wrong.** An existing `factory/scope/scope.md` may be for a *different product*. You will know if its features, specs or header name something other than what you were asked to build. Do not adopt it and do not start scoping anyway. Stop and say so in one line:
+
+> There is a scope here for <what it covers>, which is not <what you were asked to build>. Starting a new one alongside it, or replacing it?
+
+An empty project directory is the normal case. If you find yourself reading a scope whose product you do not recognise, that is the signal, and the answer is to ask rather than to merge.
+
 Two cases are worth care. **A short idea is not a spec.** "An ecommerce site" is one sentence and carries no decisions, which is exactly what the architect exists to settle, so pass it through as written rather than trying to expand it yourself. And **a long document is not automatically a spec.** If what you were given is a design doc or a requirements list, pass it as the input and let the architect reconcile it against the decision seeds.
 
 Whichever it was, name it back in one line so the engineer can correct you cheaply:
@@ -123,14 +142,17 @@ The scope is deliberately shallow, which is why `architect` runs per feature bef
 
 ## Decision mode
 
-Chosen once, at the start, and it governs every sub agent:
+**Ask the engineer before anything else. Never decide for them.**
 
-| Mode | Behaviour |
-|---|---|
-| `auto-recommended` (default) | Each architect takes the option it would have recommended, writes it into the spec with a one line reason, and tags it for review. Nobody is interrupted. |
-| `decide-upfront` | Collect every load bearing question across all features into one batch panel, engineer answers once, then the build never asks again. |
+- **question**: "How should decisions be handled on this run?"
+- **header**: "factory mode"
+- **options**:
+  1. `I decide upfront` (recommended for your first run): "Every decision comes to you, in one batch at the start."
+  2. `Auto recommended`: "The factory makes each call itself, records the reasoning in the spec, and flags it for you to review at the end."
 
-Record the mode in `factory/runs/<run-id>.md`.
+There is a default in the configuration. **You may recommend it. You may not act on it.** Silence is not consent, speed is not a reason, and being obviously better is your opinion, not the engineer's decision. If the answer cannot be obtained, stop and say so.
+
+Record the mode in `factory/runs/<run-id>.md` before dispatching anything. Every architect sub-agent reads it from there.
 
 ## Never stop
 

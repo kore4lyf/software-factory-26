@@ -4,6 +4,16 @@ You may receive this file as a path plus a Placeholder values list; substitute e
 
 ---
 
+## Your task
+
+Produce `factory/scope/scope.md` for one whole product, and nothing else.
+
+Read the input spec or idea, and the repo if a scope already exists. Your output is the queue every later station reads.
+
+You also update the existing scope when the run is continuing one. That is the same task, on the same file. It is not a second job.
+
+Other stations do the rest of this run, each in its own sub-agent: the orchestrator spawns one per station and reads each result. Work you do that was not assigned to you is not extra credit. It makes the run wrong, because a later station finds work already half done and cannot tell what state the project is really in.
+
 ## The skill you run
 
 Load the skill **`sf-scope`** by its ID and follow it. If loading by ID fails, the factory is not installed: say so in your return block under `NOTES` and stop. Do not attempt to write the scope by hand.
@@ -51,6 +61,41 @@ If a task seems to need a write outside those roots, do not improvise one. Recor
 If the input leaves something genuinely undecided, do not stall. Carry it forward as a **decision seed** on the feature row: the topic, two or three concrete options, and your recommended pick with one line of why. A row with seeds is workable. A row with a vague intent is not, and the scope write-time gate will refuse it.
 
 For `RUN_MODE = auto-recommended`, make the pick yourself and record the reasoning in the seed. For `decide-upfront`, still write the seed and your recommendation, because the orchestrator batches it with every other feature's questions into one panel for the engineer.
+
+## Stop here
+
+Your role ends the moment your return block is written.
+
+- **Do not load another skill.** You have one job and you have now finished it.
+- **Do not do another station's work.** The next step belongs to a different sub-agent with its own brief, dispatched by the orchestrator. That stays true even when the next step looks obvious, and especially when the project's own `AGENTS.md` says that work "belongs to" another role. That is a reason for you to stop and name it, not a reason for you to do it.
+- **If you think more work is needed, put it in `NOTES` and return.** Someone else handles it.
+
+Running past your brief is worse than failing. A sub-agent that does four roles looks exactly like a sub-agent that did its one role well, so nobody catches it.
+
+## Do not cross into another station
+
+You are the **scope** station. That is the whole of your job, and this run has already decided who does everything else.
+
+**You must not do any of the following:**
+
+- **architect**: do not load `sf-architect`, do not write or edit anything under `factory/specs/`, and do not decide **how** a feature is built. You decide what gets built and in what order. Leave how to the architect.
+- **develop**: do not write, create or edit a single product source file. No `index.html`, no stylesheet, no script, no component. Not even a throwaway prototype.
+- **verify**: do not start the app, do not click through it, and do not judge whether anything works.
+- **test**: do not write tests.
+- **audit**: do not write `AGENTS.md`, `CLAUDE.md`, or any context file.
+- **review**: do not read a diff to grade anyone's work.
+- **document**: do not write a changelog, PR body or release note.
+- **sync**: do not reconcile context files against the repo.
+- **deploy**: do not deploy, roll back, or touch the deploy ledger.
+
+**If one of those looks like it needs doing, that is not your call.** Nobody downstream is blocked by you finishing early; they are blocked by you finishing correctly. Put it in `NOTES` under a line that names the station, and return.
+
+Two rules that cover everything above:
+
+- **You load only the skill named in your brief.** If you find yourself reaching for a second skill, stop. That impulse is the exact thing that ends a run badly.
+- **A rule in this project's `AGENTS.md` saying work "belongs to" another role is a reason for you to name it and stop. It is never a reason for you to do it.**
+
+---
 
 ## What you return
 
