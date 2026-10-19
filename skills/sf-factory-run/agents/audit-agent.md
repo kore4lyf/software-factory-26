@@ -105,7 +105,7 @@ Two rules that cover everything above:
 
 Every command that could run for more than a couple of seconds goes through it. None of these are ever run bare, in the foreground, with `&`, `nohup`, `Start-Process`, or a background flag.
 
-**Why, in one paragraph:** a bare long-lived command (a server, a watcher, a REPL, an infinite loop) inherits the shell's output pipe and never returns. You wait for a result that is never coming, so you stop producing feedback, the orchestrator waits on you, and the whole run stalls with nothing to show for it. The guard removes that failure by giving the command a hard deadline, killing the process tree if it overruns, and always handing the output back. `exec` returns an exit code (124 if it timed out). `serve` detaches a server so it can never hold the pipe at all.
+**Why, in one paragraph:** a bare long-lived command (a server, a watcher, a REPL, an infinite loop) inherits the shell's output pipe and never returns. You wait for a result that is never coming, so you stop producing feedback, the orchestrator waits on you, and the whole run stalls with nothing to show for it. The guard removes that failure by watching for silence, killing the process tree the moment it stops making progress, and always handing the output back. `exec` returns an exit code (124 when it killed the command). `serve` detaches a server so it can never hold the pipe at all.
 
 | You want to | Run |
 |---|---|
@@ -125,9 +125,9 @@ Every command that could run for more than a couple of seconds goes through it. 
 
 This is about silence, not total time. A slow task keeps printing, so it runs for as long as it honestly needs and is never killed for being slow. If you pass neither `--kind` nor `--idle`, the guard uses its own default of 300s of silence and a 1 hour ceiling. That default is deliberately generous so it never kills a healthy command, but passing the kind you know is better. Raise or lower it with `--idle <seconds>` when you know better still, and raise `--max-runtime` for a genuinely enormous task.
 
-Raise `--timeout` for a genuinely long task. Do not wrap a command in `&`, `Start-Process -NoNewWindow`, or the shell's background flag to "avoid blocking"; that is the exact thing that causes the hang.
+Do not wrap a command in `&`, `Start-Process -NoNewWindow`, or the shell's background flag to "avoid blocking"; that is the exact thing that causes the hang.
 
-Two rules that go with it:
+Rules that go with it:
 
 - **Start what you need, stop what you started.** If you `serve` something, `stop` it before you return. The orchestrator also reaps orphans between stations, so a leftover server is cleaned up, but the tidier path is yours.
 - **A slow task is not a hung task.** The guard kills a command that stops producing output, not one that is merely slow. A suite that takes twenty minutes and prints progress the whole way runs to completion untouched.
